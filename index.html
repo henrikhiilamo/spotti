@@ -19,6 +19,7 @@
     --user: #d98a00;
     --paid: #c62828;
     --permit: #6a3fb5;
+    --restricted: #3d4451;
     --danger: #b3261e;
     --radius: 10px;
     --font: "Barlow", system-ui, -apple-system, "Segoe UI", sans-serif;
@@ -65,6 +66,7 @@
   .filters input:checked + .dot.user { background: var(--user); border-color: var(--user); }
   .filters input:checked + .dot.paid { background: var(--paid); border-color: var(--paid); }
   .filters input:checked + .dot.permit { background: var(--permit); border-color: var(--permit); }
+  .filters input:checked + .dot.restricted { background: var(--restricted); border-color: var(--restricted); }
   .filters label:has(input:checked) { background: rgba(255,255,255,0.24); }
   .filters label:has(input:focus-visible) { outline: 3px solid #fff; outline-offset: 2px; }
 
@@ -85,6 +87,7 @@
   .pin.user { background: var(--user); }
   .pin.paid { background: var(--paid); }
   .pin.permit { background: var(--permit); }
+  .pin.restricted { background: var(--restricted); }
   .leaflet-div-icon.pin-wrap { background: none; border: none; }
 
   /* Bottom controls */
@@ -133,6 +136,7 @@
   .spot .tag.user { background: var(--user); }
   .spot .tag.paid { background: var(--paid); }
   .spot .tag.permit { background: var(--permit); }
+  .spot .tag.restricted { background: var(--restricted); }
   .spot .actions { display: flex; gap: 8px; align-items: center; margin-top: 8px; }
   .spot a.route {
     background: var(--sign-blue); color: #fff; text-decoration: none; font-weight: 600;
@@ -176,6 +180,7 @@
       <label><input type="checkbox" id="f-user" checked><span class="dot user"></span>Käyttäjien lisäämät</label>
       <label><input type="checkbox" id="f-paid"><span class="dot paid"></span>Maksulliset</label>
       <label><input type="checkbox" id="f-permit"><span class="dot permit"></span>Aalto-lupa</label>
+      <label><input type="checkbox" id="f-restricted"><span class="dot restricted"></span>Ei yleisessä käytössä</label>
     </div>
   </header>
 
@@ -248,10 +253,16 @@
   var SUPABASE_URL = 'https://vkgjmozbqptezlopdtdd.supabase.co';
   var SUPABASE_KEY = 'sb_publishable_efHHmw_JM_7cYsJoE9Sijw_QaWi3MBm'; // Project Settings → API Keys
   var SPOT_COLUMNS = 'id, lat, lng, name, maxstay, note, created_by';
-  var OSM_CACHE_KEY = 'ilmaispaikka_osm_cache_v4'; // bump when parseOverpass rules change
+  var OSM_CACHE_KEY = 'ilmaispaikka_osm_cache_v5'; // bump when parseOverpass rules change
   var OSM_CACHE_MAX_AGE = 24 * 60 * 60 * 1000; // 1 day
-  // Parking access values that mean "not for ordinary drivers"
+  // Parking access values that mean "not for ordinary drivers", and how the
+  // popup explains them. Such areas are shown only with the "Ei yleisessä
+  // käytössä" filter.
   var BLOCKED_ACCESS = ['private', 'customers', 'permit', 'delivery', 'no', 'residents'];
+  var ACCESS_TEXT = {
+    private: 'Yksityinen alue', customers: 'Vain asiakkaille', permit: 'Vain luvan haltijoille',
+    delivery: 'Vain huoltoajoon', no: 'Pysäköinti kielletty', residents: 'Vain asukkaille'
+  };
   // Areas OSM tags as free that actually need an Aalto University parking
   // permit or a fee, checked against Aalto's campus parking map
   // (Pysakointikartta_maksullinen_katupysakointi_v8) on 2026-11-02. Hidden like
@@ -307,7 +318,7 @@
   var addMode = false;
   var db = SUPABASE_URL && SUPABASE_KEY ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY) : null;
 
-  var FILTERS = ['free', 'unknown', 'user', 'paid', 'permit']; // checkbox id = 'f-' + kind
+  var FILTERS = ['free', 'unknown', 'user', 'paid', 'permit', 'restricted']; // checkbox id = 'f-' + kind
   var layers = {};
   FILTERS.forEach(function (kind) { layers[kind] = L.layerGroup(); });
 
@@ -379,7 +390,8 @@
 
   // Popup content is built with DOM nodes + textContent so that tag text
   // from OSM or users can never inject HTML.
-  var TAG_TEXT = { free: 'Ilmainen', unknown: 'Hinta tuntematon', paid: 'Maksullinen', permit: 'Vaatii Aalto-luvan' };
+  var TAG_TEXT = { free: 'Ilmainen', unknown: 'Hinta tuntematon', paid: 'Maksullinen', permit: 'Vaatii Aalto-luvan',
+                   restricted: 'Ei yleisessä käytössä' };
   function popupFor(spot) {
     var wrap = el('div', 'spot');
     var kind = spotKind(spot);
@@ -387,7 +399,9 @@
                 : TAG_TEXT[kind] + ' (' + (spot.sourceLabel || 'OSM') + ')';
     wrap.appendChild(el('span', 'tag ' + kind, tagText));
     wrap.appendChild(el('h3', null, spot.name || 'Pysäköintialue'));
-    if (spot.fee === 'yes') {
+    if (spot.restricted) {
+      wrap.appendChild(el('p', 'meta', ACCESS_TEXT[spot.restricted] + '.'));
+    } else if (spot.fee === 'yes') {
       wrap.appendChild(el('p', 'meta', 'Hinta: ' + (spot.price || 'ei tiedossa')));
       wrap.appendChild(el('p', 'meta', 'Maksu: ' + (spot.payment || 'tarkista paikan päältä')));
       if (spot.permit) wrap.appendChild(el('p', 'meta', 'Myös Aalto-yliopiston pysäköintiluvalla.'));
@@ -441,6 +455,7 @@
   // Aalto permit shows up as a permit spot when only that filter is on.
   function spotKind(s) {
     if (s.source === 'user') return 'user';
+    if (s.restricted) return 'restricted';
     if (s.fee === 'no') return 'free';
     if (s.fee === 'yes') return s.permit && !isOn('paid') ? 'permit' : 'paid';
     return s.permit ? 'permit' : 'unknown';
@@ -456,7 +471,7 @@
   function render() {
     FILTERS.forEach(function (kind) { layers[kind].clearLayers(); });
     osmSpots.concat(aaltoSpots, userSpots).forEach(function (s) {
-      if (s.source === 'osm' && s.fee !== 'no' && nearAalto(s)) return;
+      if (s.source === 'osm' && !s.restricted && s.fee !== 'no' && nearAalto(s)) return;
       var kind = spotKind(s);
       L.marker([s.lat, s.lng], { icon: makeIcon(kind), title: s.name || 'Pysäköintialue' })
         .bindPopup(function () { return popupFor(s); })
@@ -491,12 +506,12 @@
         if (street) out.push(street);
         return;
       }
-      if (tags.access && BLOCKED_ACCESS.indexOf(tags.access) !== -1) return;
       out.push({
         id: 'osm-' + e.type + '-' + e.id,
         source: 'osm',
         lat: lat,
         lng: lng,
+        restricted: BLOCKED_ACCESS.indexOf(tags.access) !== -1 ? tags.access : '',
         name: tags.name || '',
         fee: tags.fee === 'no' || tags.fee === 'yes' ? tags.fee : 'unknown',
         price: tags.charge || '',
@@ -599,7 +614,9 @@
       osmSpots = parseOverpass(json);
       saveOsmCache(osmSpots);
       render();
-      var count = function (fee) { return osmSpots.filter(function (s) { return s.fee === fee; }).length; };
+      var count = function (fee) {
+        return osmSpots.filter(function (s) { return !s.restricted && s.fee === fee; }).length;
+      };
       setStatus('Löytyi ' + count('no') + ' ilmaista, ' + count('yes') + ' maksullista ja ' +
                 count('unknown') + ' hinnaltaan tuntematonta paikkaa.');
     })
