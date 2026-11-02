@@ -1,4 +1,4 @@
--- Ilmaispaikka: käyttäjien lisäämät pysäköintipaikat.
+-- Spotti: käyttäjien lisäämät pysäköintipaikat.
 -- Aja kerran Supabasen hallintapaneelissa: SQL Editor → New query → liitä tämä → Run.
 
 create table public.spots (

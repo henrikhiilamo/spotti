@@ -3,14 +3,15 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Ilmaispaikka – ilmaiset pysäköintipaikat kartalla</title>
+<title>Spotti – ilmaiset pysäköintipaikat kartalla</title>
+<meta name="theme-color" content="#ffcc00">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
 <style>
   :root {
-    --sign-blue: #17479e;
+    --brand: #ffcc00; /* Spotti yellow; always use --ink for text on it */
     --ink: #1b2430;
     --snow: #f4f7fa;
     --line: #d5dce5;
@@ -37,15 +38,15 @@
 
   /* Top bar */
   header {
-    background: var(--sign-blue);
-    color: #fff;
+    background: var(--brand);
+    color: var(--ink);
     padding: calc(10px + env(safe-area-inset-top, 0px)) 14px 10px;
     z-index: 1000;
   }
   .brand { display: flex; align-items: center; gap: 10px; }
   .brand-mark {
     width: 30px; height: 30px; border-radius: 6px;
-    background: #fff; color: var(--sign-blue);
+    background: var(--ink); color: var(--brand);
     display: grid; place-items: center;
     font-weight: 700; font-size: 20px; line-height: 1;
   }
@@ -54,8 +55,8 @@
   .filters { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
   .filters label {
     display: inline-flex; align-items: center; gap: 7px;
-    background: rgba(255,255,255,0.12);
-    border: 1px solid rgba(255,255,255,0.28);
+    background: rgba(27,36,48,0.07);
+    border: 1px solid rgba(27,36,48,0.3);
     border-radius: 999px; padding: 5px 11px 5px 9px;
     font-size: 14px; cursor: pointer; user-select: none;
     /* Whole pixels keep the header, and so the map's top edge, on a whole
@@ -63,15 +64,15 @@
     line-height: 20px;
   }
   .filters input { position: absolute; opacity: 0; pointer-events: none; }
-  .filters .dot { width: 12px; height: 12px; border-radius: 50%; border: 2px solid #fff; background: transparent; }
+  .filters .dot { width: 12px; height: 12px; border-radius: 50%; border: 2px solid var(--ink); background: transparent; }
   .filters input:checked + .dot.free { background: var(--free); border-color: var(--free); }
   .filters input:checked + .dot.unknown { background: var(--unknown); border-color: var(--unknown); }
   .filters input:checked + .dot.user { background: var(--user); border-color: var(--user); }
   .filters input:checked + .dot.paid { background: var(--paid); border-color: var(--paid); }
   .filters input:checked + .dot.permit { background: var(--permit); border-color: var(--permit); }
   .filters input:checked + .dot.restricted { background: var(--restricted); border-color: var(--restricted); }
-  .filters label:has(input:checked) { background: rgba(255,255,255,0.24); }
-  .filters label:has(input:focus-visible) { outline: 3px solid #fff; outline-offset: 2px; }
+  .filters label:has(input:checked) { background: rgba(255,255,255,0.55); border-color: rgba(27,36,48,0.45); }
+  .filters label:has(input:focus-visible) { outline: 3px solid var(--ink); outline-offset: 2px; }
 
   /* Map */
   .map-wrap { flex: 1; min-height: 0; position: relative; }
@@ -112,8 +113,8 @@
     border-radius: var(--radius); border: 1px solid transparent;
     padding: 11px 16px; min-height: 44px;
   }
-  button:focus-visible, input:focus-visible, textarea:focus-visible { outline: 3px solid #ffbf47; outline-offset: 2px; }
-  .btn-primary { background: var(--sign-blue); color: #fff; box-shadow: 0 2px 8px rgba(0,0,0,0.3); }
+  button:focus-visible, input:focus-visible, textarea:focus-visible { outline: 3px solid var(--ink); outline-offset: 2px; }
+  .btn-primary { background: var(--brand); color: var(--ink); border-color: rgba(27,36,48,0.25); box-shadow: 0 2px 8px rgba(0,0,0,0.3); }
   .btn-secondary { background: #fff; color: var(--ink); border-color: var(--line); box-shadow: 0 2px 8px rgba(0,0,0,0.2); }
   .btn-danger { background: #fff; color: var(--danger); border-color: var(--danger); padding: 7px 12px; min-height: 36px; }
 
@@ -147,7 +148,7 @@
   .spot .tag.restricted { background: var(--restricted); }
   .spot .actions { display: flex; gap: 8px; align-items: center; margin-top: 8px; }
   .spot a.route {
-    background: var(--sign-blue); color: #fff; text-decoration: none; font-weight: 600;
+    background: var(--brand); color: var(--ink); text-decoration: none; font-weight: 600;
     padding: 7px 12px; border-radius: var(--radius); font-size: 14px;
   }
 
@@ -183,7 +184,7 @@
   <header>
     <div class="brand">
       <div class="brand-mark" aria-hidden="true">P</div>
-      <h1>Ilmaispaikka</h1>
+      <h1>Spotti</h1>
       <p class="tagline">Ilmaiset parkkipaikat kartalla</p>
     </div>
     <div class="filters" role="group" aria-label="Näytettävät paikat">
@@ -265,6 +266,7 @@
   var SUPABASE_URL = 'https://vkgjmozbqptezlopdtdd.supabase.co';
   var SUPABASE_KEY = 'sb_publishable_efHHmw_JM_7cYsJoE9Sijw_QaWi3MBm'; // Project Settings → API Keys
   var SPOT_COLUMNS = 'id, lat, lng, name, maxstay, note, created_by';
+  // localStorage keys keep the app's old name, Ilmaispaikka, so saved state survives the rename.
   var OSM_CACHE_KEY = 'ilmaispaikka_osm_cache_v5'; // bump when parseOverpass rules change
   var OSM_CACHE_MAX_AGE = 24 * 60 * 60 * 1000; // 1 day
   // Parking access values that mean "not for ordinary drivers", and how the
