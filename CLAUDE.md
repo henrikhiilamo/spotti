@@ -10,6 +10,7 @@ Harjoitusprojekti: omistaja opettelee rakentamaan ja julkaisemaan sovelluksen ja
 
 - `index.html` on koko sovellus: HTML, CSS ja JavaScript samassa tiedostossa. Ei build-vaihetta eikä npm:ää.
 - `supabase/schema.sql` on tietokannan rakenne ja käyttöoikeudet. Ajetaan käsin Supabasen SQL Editorissa.
+- `data/osm-otaniemi.json` on Otaniemen OSM-pysäköintialueiden tilannekuva (Overpassin raakavastaus). Päivitetään komennolla `sh scripts/update-osm-snapshot.sh`.
 - Kirjastot ladataan CDN:stä tarkalla versionumerolla: Leaflet 1.9.4 (cdnjs), supabase-js 2.118.0 (jsDelivr).
 
 ## Ajaminen
@@ -36,7 +37,10 @@ Clauden esikatselu (`.claude/launch.json`) käyttää porttia 8001, ettei se tö
   - `amenity=parking` + `fee=no` → ilmainen
   - `amenity=parking` ilman `fee`-tagia → hinta tuntematon
   - pois suodatetaan `access` = private, customers, permit, delivery, no, residents
+  - `fee:conditional` näytetään ponnahdusikkunassa, esimerkiksi Otaparkki: `fee=no`, mutta "Maksullinen ma-pe 08:00-18:00". Muuten osittain maksullinen paikka näyttäisi aina ilmaiselta.
   - haku vain zoomilla ≥ 14, tulos välimuistiin localStorageen 24 tunniksi
+  - käynnistyksessä näytetään välimuisti tai, jos sitä ei ole, repon tilannekuva `data/osm-otaniemi.json`. Live-haku tehdään vain Hae-napista, tai jos tilannekuvaa ei saada ladattua.
+  - sama Overpass-kysely on kahdessa paikassa (`searchArea()` ja `scripts/update-osm-snapshot.sh`), joten pidä ne samoina
 - Käyttäjien lisäämät paikat: Supabase-taulu `spots`, kaikki näkevät samat paikat.
 
 ## Supabase
@@ -65,6 +69,13 @@ Miten oikeudet toimivat:
 - 2026-11-02: Julkaisu GitHub Pagesiin, koska se on ilmainen ja päivittyy suoraan `git push` -komennolla ilman erillistä palvelua. Push tehdään SSH-avaimella (`~/.ssh/id_ed25519`, salasana macOS:n avainnipussa).
 - 2026-11-02: Käyttäjien paikat localStoragesta Supabaseen, jotta kaikki näkevät samat paikat. supabase-js ladataan CDN:stä (ei npm:ää), koska anonyymi kirjautuminen on sillä helppo tehdä. Poisto-oikeus vain lisääjällä anonyymin tunnuksen avulla; vaihtoehto "kuka tahansa voi poistaa" hylättiin, koska yksi ilkivaltainen käyttäjä voisi tyhjentää kartan.
 - 2026-11-02: Vanhoja localStorageen tallennettuja paikkoja ei siirretä Supabaseen automaattisesti; sovellus ei enää lue niitä.
+
+- 2026-11-02: Valmiiksi lisättävien paikkojen lähteet tutkittiin. Mukaan otettiin vain OSM-tilannekuva, koska muut eivät sopineet:
+  - Fintraffic LIIPI (liityntäpysäköinti, `parking.fintraffic.fi/api/v1/facilities`): lähellä vain yksi ilmainen paikka, Hanasaarenranta (80 paikkaa, 12 h), eikä lisenssiä löytynyt
+  - Espoon pysäköintirekisteri (WFS-taso `GIS:PKSEspooPysakointialueet`): ei hintatietoa, eikä Otaniemessä ole yhtään kohdetta
+  - Aalto-yliopisto: kampuksella pysäköinti on arkisin 8–18 maksullista tai vaatii henkilökunnan luvan
+  - EasyPark, Parkman, Google Maps: käyttöehdot kieltävät tietojen kopioinnin
+- OSM-data on ODbL-lisenssillä: lähde pitää mainita (kartan alakulmassa), ja johdettu aineisto on jaettava samalla lisenssillä (repo on julkinen).
 
 ## Tunnetut rajoitukset
 

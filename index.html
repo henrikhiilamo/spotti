@@ -220,6 +220,7 @@
     'https://overpass.private.coffee/api/interpreter'
   ];
   var OVERPASS_TIMEOUT = 20 * 1000; // per server, so a hung server can't block the search forever
+  var OSM_SNAPSHOT_URL = 'data/osm-otaniemi.json'; // made by scripts/update-osm-snapshot.sh
   // Users' spots are shared through Supabase. The publishable key is public
   // on purpose: the RLS rules in supabase/schema.sql decide what anyone may do.
   var SUPABASE_URL = 'https://vkgjmozbqptezlopdtdd.supabase.co';
@@ -410,10 +411,20 @@
         name: tags.name || '',
         fee: tags.fee === 'no' ? 'no' : 'unknown',
         maxstay: tags.maxstay || '',
-        note: ''
+        note: feeNote(tags['fee:conditional'])
       });
     });
     return out;
+  }
+
+  // OSM's fee:conditional, e.g. "yes @ (Mo-Fr 08:00-18:00)", marks a spot that
+  // is free only part of the time. Show the paid hours so nobody gets a fine.
+  var DAYS = { Mo: 'ma', Tu: 'ti', We: 'ke', Th: 'to', Fr: 'pe', Sa: 'la', Su: 'su' };
+  function feeNote(cond) {
+    if (!cond) return '';
+    var m = /^yes\s*@\s*\(?(.+?)\)?$/.exec(cond);
+    var text = m ? 'Maksullinen ' + m[1] : 'Maksullisuus vaihtelee: ' + cond;
+    return text.replace(/\b(Mo|Tu|We|Th|Fr|Sa|Su)\b/g, function (d) { return DAYS[d]; });
   }
 
   function searchArea() {
@@ -608,15 +619,27 @@
   });
 
   // ---------- Start ----------
+  function showSavedOsm(spots) {
+    osmSpots = spots;
+    render();
+    setStatus('Näytetään tallennetut paikat. Päivitä painamalla Hae tältä alueelta.');
+  }
+
   fetchUserSpots();
   var cached = loadOsmCache();
   if (cached) {
-    osmSpots = cached;
-    render();
-    setStatus('Näytetään tallennetut paikat. Päivitä painamalla Hae tältä alueelta.');
+    showSavedOsm(cached);
   } else {
+    // Show the snapshot that ships with the app, so the map isn't empty even
+    // when every Overpass server is down. Search live only if it's missing.
     render();
-    searchArea();
+    fetch(OSM_SNAPSHOT_URL)
+    .then(function (r) {
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      return r.json();
+    })
+    .then(function (json) { showSavedOsm(parseOverpass(json)); })
+    .catch(function () { searchArea(); });
   }
 })();
 </script>
