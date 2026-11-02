@@ -147,6 +147,7 @@
     border: 1px solid var(--line); border-radius: 8px; width: 100%;
   }
   .hint { font-weight: 400; color: #5b6676; font-size: 13px; }
+  .form-error { margin: 0; color: var(--danger); font-size: 14px; font-weight: 600; }
   .dialog-actions { display: flex; justify-content: flex-end; gap: 8px; }
 
   @media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; transition: none !important; } }
@@ -196,6 +197,7 @@
       <textarea id="in-note" rows="2" maxlength="200" placeholder="Esim. täyttyy ennen klo 9, kyltti: ark. 8–18 max 2 h"></textarea>
       <span class="hint">Kirjoita sääntö niin kuin kyltissä lukee. Se auttaa muita tarkistamaan tiedon.</span>
     </label>
+    <p class="form-error" id="form-error" role="alert" hidden>Tallennus epäonnistui. Tarkista nettiyhteys ja yritä uudelleen.</p>
     <div class="dialog-actions">
       <button type="button" class="btn-secondary" id="btn-cancel">Peruuta</button>
       <button type="submit" class="btn-primary">Tallenna paikka</button>
@@ -204,6 +206,7 @@
 </dialog>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.118.0/dist/umd/supabase.js"></script>
 <script>
 (function () {
   'use strict';
@@ -216,7 +219,11 @@
     'https://overpass-api.de/api/interpreter',
     'https://overpass.private.coffee/api/interpreter'
   ];
-  var LS_KEY = 'ilmaispaikka_user_spots_v1';
+  // Users' spots are shared through Supabase. The publishable key is public
+  // on purpose: the RLS rules in supabase/schema.sql decide what anyone may do.
+  var SUPABASE_URL = ''; // e.g. https://abcdefghijkl.supabase.co
+  var SUPABASE_KEY = ''; // Project Settings → API Keys → Publishable key
+  var SPOT_COLUMNS = 'id, lat, lng, name, maxstay, note, created_by';
   var OSM_CACHE_KEY = 'ilmaispaikka_osm_cache_v1';
   var OSM_CACHE_MAX_AGE = 24 * 60 * 60 * 1000; // 1 day
   // Parking access values that mean "not for ordinary drivers"
@@ -224,8 +231,10 @@
 
   // ---------- State ----------
   var osmSpots = [];
-  var userSpots = loadUserSpots();
+  var userSpots = [];
+  var myUserId = null; // anonymous Supabase user of this browser, if any
   var addMode = false;
+  var db = SUPABASE_URL && SUPABASE_KEY ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY) : null;
 
   var layers = {
     free: L.layerGroup(),
@@ -284,18 +293,6 @@
     if (!sticky) statusTimer = setTimeout(function () { statusEl.hidden = true; }, 4000);
   }
 
-  function loadUserSpots() {
-    try {
-      var raw = localStorage.getItem(LS_KEY);
-      var parsed = raw ? JSON.parse(raw) : [];
-      return Array.isArray(parsed) ? parsed : [];
-    } catch (e) { return []; }
-  }
-  function saveUserSpots() {
-    try { localStorage.setItem(LS_KEY, JSON.stringify(userSpots)); }
-    catch (e) { setStatus('Tallennus ei onnistunut tässä selaimessa.'); }
-  }
-
   function makeIcon(kind) {
     return L.divIcon({
       className: 'pin-wrap',
@@ -333,15 +330,29 @@
     route.rel = 'noopener';
     actions.appendChild(route);
 
-    if (spot.source === 'user') {
+    // Only the browser that added a spot gets a delete button. The database
+    // checks the same thing, so hiding the button is just for convenience.
+    if (spot.source === 'user' && spot.createdBy && spot.createdBy === myUserId) {
       var del = el('button', 'btn-danger', 'Poista');
       del.type = 'button';
       del.addEventListener('click', function () {
         if (!confirm('Poistetaanko tämä paikka?')) return;
-        userSpots = userSpots.filter(function (s) { return s.id !== spot.id; });
-        saveUserSpots();
-        render();
-        map.closePopup();
+        del.disabled = true;
+        // .select() returns the deleted rows: an empty list means RLS refused.
+        db.from('spots').delete().eq('id', spot.id).select('id')
+        .then(function (res) {
+          if (res.error) throw res.error;
+          if (!res.data.length) throw new Error('Rivi ei poistunut');
+          userSpots = userSpots.filter(function (s) { return s.id !== spot.id; });
+          render();
+          map.closePopup();
+          setStatus('Paikka poistettu.');
+        })
+        .catch(function (err) {
+          del.disabled = false;
+          setStatus('Poisto epäonnistui. Yritä uudelleen.');
+          if (window.console) console.error('Poisto epäonnistui:', err);
+        });
       });
       actions.appendChild(del);
     }
@@ -470,11 +481,62 @@
   }
   document.getElementById('btn-search').addEventListener('click', searchArea);
 
+  // ---------- Users' spots (Supabase) ----------
+  function toSpot(row) {
+    return {
+      id: row.id,
+      source: 'user',
+      lat: row.lat,
+      lng: row.lng,
+      name: row.name,
+      maxstay: row.maxstay,
+      note: row.note,
+      fee: 'no',
+      createdBy: row.created_by
+    };
+  }
+
+  function fetchUserSpots() {
+    if (!db) {
+      setStatus('Supabase-asetukset puuttuvat, joten käyttäjien paikkoja ei näytetä.', true);
+      return;
+    }
+    db.auth.getSession()
+    .then(function (res) {
+      if (res.data.session) myUserId = res.data.session.user.id;
+      return db.from('spots').select(SPOT_COLUMNS);
+    })
+    .then(function (res) {
+      if (res.error) throw res.error;
+      userSpots = res.data.map(toSpot);
+      render();
+    })
+    .catch(function (err) {
+      setStatus('Käyttäjien lisäämiä paikkoja ei saatu haettua. Päivitä sivu hetken päästä.', true);
+      if (window.console) console.error('Supabase-haku epäonnistui:', err);
+    });
+  }
+
+  // Adding needs a user id. The first time this browser adds a spot it gets
+  // an anonymous account, which Supabase remembers in localStorage. Just
+  // looking at the map never creates an account.
+  function ensureUser() {
+    return db.auth.getSession().then(function (res) {
+      if (res.data.session) return res.data.session.user;
+      return db.auth.signInAnonymously().then(function (r) {
+        if (r.error) throw r.error;
+        return r.data.user;
+      });
+    });
+  }
+
   // ---------- Add a spot ----------
   var mapEl = document.getElementById('map');
   var addBtn = document.getElementById('btn-add');
   var dlg = document.getElementById('dlg');
   var form = document.getElementById('form');
+  var formError = document.getElementById('form-error');
+  var saveBtn = form.querySelector('button[type="submit"]');
   var pendingLatLng = null;
 
   function setAddMode(on) {
@@ -492,6 +554,7 @@
     pendingLatLng = ev.latlng;
     setAddMode(false);
     form.reset();
+    formError.hidden = true;
     dlg.showModal();
     document.getElementById('in-name').focus();
   });
@@ -504,25 +567,40 @@
   form.addEventListener('submit', function (ev) {
     ev.preventDefault();
     if (!pendingLatLng) return;
-    userSpots.push({
-      id: 'user-' + Date.now() + '-' + Math.floor(Math.random() * 1000),
-      source: 'user',
+    // Read the form now: the user may cancel while the save is in flight.
+    // id, created_by and created_at are filled in by the database.
+    var row = {
       lat: pendingLatLng.lat,
       lng: pendingLatLng.lng,
       name: document.getElementById('in-name').value.trim(),
       maxstay: document.getElementById('in-maxstay').value.trim(),
-      note: document.getElementById('in-note').value.trim(),
-      fee: 'no',
-      addedAt: new Date().toISOString()
-    });
-    saveUserSpots();
-    pendingLatLng = null;
-    dlg.close();
-    render();
-    setStatus('Paikka tallennettu.');
+      note: document.getElementById('in-note').value.trim()
+    };
+    saveBtn.disabled = true;
+    formError.hidden = true;
+
+    ensureUser()
+    .then(function (user) {
+      myUserId = user.id;
+      return db.from('spots').insert(row).select(SPOT_COLUMNS).single();
+    })
+    .then(function (res) {
+      if (res.error) throw res.error;
+      userSpots.push(toSpot(res.data));
+      pendingLatLng = null;
+      dlg.close();
+      render();
+      setStatus('Paikka tallennettu. Nyt muutkin näkevät sen.');
+    })
+    .catch(function (err) {
+      formError.hidden = false;
+      if (window.console) console.error('Tallennus epäonnistui:', err);
+    })
+    .then(function () { saveBtn.disabled = false; });
   });
 
   // ---------- Start ----------
+  fetchUserSpots();
   var cached = loadOsmCache();
   if (cached) {
     osmSpots = cached;

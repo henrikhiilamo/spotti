@@ -9,7 +9,8 @@ Harjoitusprojekti: omistaja opettelee rakentamaan ja julkaisemaan sovelluksen ja
 ## Rakenne
 
 - `index.html` on koko sovellus: HTML, CSS ja JavaScript samassa tiedostossa. Ei build-vaihetta eikä npm:ää.
-- Kirjastot ladataan CDN:stä tarkalla versionumerolla (Leaflet 1.9.4 cdnjs:stä).
+- `supabase/schema.sql` on tietokannan rakenne ja käyttöoikeudet. Ajetaan käsin Supabasen SQL Editorissa.
+- Kirjastot ladataan CDN:stä tarkalla versionumerolla: Leaflet 1.9.4 (cdnjs), supabase-js 2.118.0 (jsDelivr).
 
 ## Ajaminen
 
@@ -19,6 +20,8 @@ python3 -m http.server 8000
 
 Avaa http://localhost:8000. Sivua ei voi avata suoraan tiedostona (`file://`), koska karttapohja ja haut vaativat http-palvelimen.
 
+Clauden esikatselu (`.claude/launch.json`) käyttää porttia 8001, ettei se törmää omistajan omaan palvelimeen portissa 8000.
+
 ## Tietolähteet
 
 - Karttapohja: OpenStreetMapin tiilet. Jos ne eivät lataudu, vaihdetaan automaattisesti Esri World Street Mapiin.
@@ -27,7 +30,21 @@ Avaa http://localhost:8000. Sivua ei voi avata suoraan tiedostona (`file://`), k
   - `amenity=parking` ilman `fee`-tagia → hinta tuntematon
   - pois suodatetaan `access` = private, customers, permit, delivery, no, residents
   - haku vain zoomilla ≥ 14, tulos välimuistiin localStorageen 24 tunniksi
-- Käyttäjien lisäämät paikat: localStorage (vain omassa selaimessa).
+- Käyttäjien lisäämät paikat: Supabase-taulu `spots`, kaikki näkevät samat paikat.
+
+## Supabase
+
+Käyttöönotto uudessa projektissa:
+1. Luo projekti osoitteessa supabase.com.
+2. SQL Editor → aja `supabase/schema.sql`.
+3. Authentication → Sign In / Providers → kytke päälle "Allow anonymous sign-ins".
+4. Kopioi projektin URL ja publishable key `index.html`:n vakioihin `SUPABASE_URL` ja `SUPABASE_KEY`.
+
+Miten oikeudet toimivat:
+- Kuka tahansa voi katsoa paikkoja kirjautumatta.
+- Kun selain lisää ensimmäisen paikkansa, se kirjautuu anonyymisti (`signInAnonymously`). Supabase muistaa tunnuksen selaimen localStoragessa. Pelkkä katselu ei luo tunnusta.
+- Tietokanta täyttää `created_by`-sarakkeen itse. RLS-säännöt sallivat lisäyksen vain omissa nimissä ja poiston vain lisääjälle. Muokkausta ei ole.
+- Publishable (anon) key on tarkoitettu julkiseksi ja saa olla koodissa ja Gitissä; turvallisuus tulee RLS-säännöistä. Secret- eli service_role-avainta ei saa koskaan laittaa tähän repoon.
 
 ## Koodityyli
 
@@ -38,3 +55,13 @@ Avaa http://localhost:8000. Sivua ei voi avata suoraan tiedostona (`file://`), k
 ## Päätökset
 
 - 2026-11-02: Projekti Git-repoksi, päähaara `main`. Commit-nimi ja -sähköposti on asetettu vain tähän repoon (`git config`, ei `--global`).
+- 2026-11-02: Käyttäjien paikat localStoragesta Supabaseen, jotta kaikki näkevät samat paikat. supabase-js ladataan CDN:stä (ei npm:ää), koska anonyymi kirjautuminen on sillä helppo tehdä. Poisto-oikeus vain lisääjällä anonyymin tunnuksen avulla; vaihtoehto "kuka tahansa voi poistaa" hylättiin, koska yksi ilkivaltainen käyttäjä voisi tyhjentää kartan.
+- 2026-11-02: Vanhoja localStorageen tallennettuja paikkoja ei siirretä Supabaseen automaattisesti; sovellus ei enää lue niitä.
+
+## Tunnetut rajoitukset
+
+- Lisäyksiä ei ole rajoitettu: kuka tahansa voi skriptillä luoda paljon anonyymejä tunnuksia ja paikkoja. Jos roskaa alkaa tulla, lisää CAPTCHA anonyymiin kirjautumiseen.
+- Haku palauttaa enintään 1000 riviä (Supabasen oletus). Kun paikkoja on enemmän, hae vain kartalla näkyvältä alueelta.
+- Uudet paikat näkyvät muille vasta, kun he lataavat sivun uudelleen (ei Realtime-tilausta).
+- Supabasen ilmaisprojekti menee tauolle, jos sitä ei käytetä viikkoon.
+- Jos anonyymi käyttäjä tyhjentää selaimensa tiedot, hän ei voi enää poistaa omia paikkojaan. Paikat jäävät, ja ne voi poistaa hallintapaneelista.
