@@ -2,7 +2,7 @@
 
 Verkkosovellus, joka näyttää ilmaiset pysäköintipaikat kartalla, aluksi Aalto-yliopiston Otaniemen alueella. Sovelluksen aiempi nimi oli Ilmaispaikka.
 
-Brändi: nimi Spotti, pääväri keltainen `--brand: #ffcc00`. Keltaisen päällä teksti on aina tummaa (`--ink`), koska valkoinen teksti keltaisella ei ole luettavaa. Kontrasti on 10,4:1, kun suositus on vähintään 4,5:1.
+Brändi: nimi Spotti, pääväri pehmeä keltainen `--brand: #ffd54f` (vaihdettiin räikeämmästä #ffcc00:sta). Keltaisen päällä teksti on aina tummaa (`--ink`), koska valkoinen teksti keltaisella ei ole luettavaa. Kontrasti on 11,1:1, kun suositus on vähintään 4,5:1.
 
 Harjoitusprojekti: omistaja opettelee rakentamaan ja julkaisemaan sovelluksen ja hankkimaan sille käyttäjiä.
 - Selitä tekemäsi muutokset lyhyesti, omistaja haluaa oppia.
@@ -43,7 +43,7 @@ Clauden esikatselu (`.claude/launch.json`) käyttää porttia 8001, ettei se tö
 - OSM-pysäköintialueet haetaan Overpass API:lla (kaksi palvelinta, toinen varalla; kumpaakin odotetaan enintään 20 s, koska ilmaiset palvelimet välillä jumittuvat vastaamatta):
   - `amenity=parking` + `fee=no` → ilmainen
   - `amenity=parking` ilman `fee`-tagia → hinta tuntematon
-  - alueet, joiden `access` on private, customers, permit, delivery, no tai residents, näkyvät vain suodattimella "Ei yleisessä käytössä" (tummanharmaa merkki, syy kerrotaan ponnahdusikkunassa). Suodatin lisättiin, koska karttapohja piirtää P-merkin jokaiselle OSM:n pysäköintialueelle, ja ilman suodatinta käyttäjä ihmetteli merkittömiä alueita. Otaniemessä tällaisia alueita on noin 220, joista suurin osa on yksityisiä.
+  - alueet, joiden `access` on private, customers, permit, delivery, no tai residents, näkyvät vain suodattimella "Yksityinen/kiinteistön" (tummanharmaa merkki, syy kerrotaan ponnahdusikkunassa). Suodatin lisättiin, koska karttapohja piirtää P-merkin jokaiselle OSM:n pysäköintialueelle, ja ilman suodatinta käyttäjä ihmetteli merkittömiä alueita. Otaniemessä tällaisia alueita on noin 220, joista suurin osa on yksityisiä.
   - `NOT_FREE_OSM` (index.html) piilottaa alueet, jotka OSM merkitsee ilmaisiksi, vaikka ne vaativat Aalto-yliopiston pysäköintiluvan tai ovat maksullisia. Lista on tarkistettu Aallon kampuksen pysäköintikarttaa (v8) vasten 2026-11-02. Jos OSM-alue piirretään uudelleen, sen tunniste vaihtuu ja se pitää lisätä listaan uudelleen. Parempi pitkän aikavälin korjaus on korjata tagit (`access=permit`) suoraan OSM:ään paikan päällä nähtyjen kylttien perusteella. Aallon karttaa ei voi käyttää OSM:n lähteenä, koska OSM hyväksyy vain lähteet, joiden lisenssi sen sallii, eikä Aallon kartalle ole ilmoitettu lisenssiä.
   - Kadunvarsipysäköinti haetaan kaduille merkityistä tageista (`parking:left/right/both` ja vanhempi `parking:lane:*`, ehdot `:fee`, `:restriction`, `:access`, `parking:condition:*`). Logiikka on `streetSpot()`-funktiossa. Katuosuus näytetään yhtenä merkkinä keskikohdassaan. Se on ilmainen, jos jollain puolella on `fee=no`, `free` tai `disc`, ja muuten hinta on tuntematon.
   - `PAID_STREETS` (index.html) piilottaa kadut, joiden kadunvarsipysäköinnin Espoo muutti maksulliseksi lokakuussa 2026 Otaniemessä ja Tapiolassa (Espoon tiedote 16.9.2026, liitekartat). OSM merkitsee monet niistä yhä ilmaisiksi. Osittain maksulliset kadut piilotetaan kokonaan varmuuden vuoksi. Muualla Espoossa (esim. Matinkylä, Kilo, Soukka, Leppävaara) maksullisuutta laajennettiin myös vuonna 2026, mutta niitä katuja ei ole listassa.

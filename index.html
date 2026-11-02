@@ -4,14 +4,14 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Spotti – ilmaiset pysäköintipaikat kartalla</title>
-<meta name="theme-color" content="#ffcc00">
+<meta name="theme-color" content="#ffd54f">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
 <style>
   :root {
-    --brand: #ffcc00; /* Spotti yellow; always use --ink for text on it */
+    --brand: #ffd54f; /* Spotti yellow; always use --ink for text on it */
     --ink: #1b2430;
     --snow: #f4f7fa;
     --line: #d5dce5;
@@ -193,7 +193,7 @@
       <label><input type="checkbox" id="f-user" checked><span class="dot user"></span>Käyttäjien lisäämät</label>
       <label><input type="checkbox" id="f-paid"><span class="dot paid"></span>Maksulliset</label>
       <label><input type="checkbox" id="f-permit"><span class="dot permit"></span>Aalto-lupa</label>
-      <label><input type="checkbox" id="f-restricted"><span class="dot restricted"></span>Ei yleisessä käytössä</label>
+      <label><input type="checkbox" id="f-restricted"><span class="dot restricted"></span>Yksityinen/kiinteistön</label>
     </div>
   </header>
 
@@ -270,8 +270,8 @@
   var OSM_CACHE_KEY = 'ilmaispaikka_osm_cache_v5'; // bump when parseOverpass rules change
   var OSM_CACHE_MAX_AGE = 24 * 60 * 60 * 1000; // 1 day
   // Parking access values that mean "not for ordinary drivers", and how the
-  // popup explains them. Such areas are shown only with the "Ei yleisessä
-  // käytössä" filter.
+  // popup explains them. Such areas are shown only with the
+  // "Yksityinen/kiinteistön" filter.
   var BLOCKED_ACCESS = ['private', 'customers', 'permit', 'delivery', 'no', 'residents'];
   var ACCESS_TEXT = {
     private: 'Yksityinen alue', customers: 'Vain asiakkaille', permit: 'Vain luvan haltijoille',
@@ -445,7 +445,7 @@
   // Popup content is built with DOM nodes + textContent so that tag text
   // from OSM or users can never inject HTML.
   var TAG_TEXT = { free: 'Ilmainen', unknown: 'Hinta tuntematon', paid: 'Maksullinen', permit: 'Vaatii Aalto-luvan',
-                   restricted: 'Ei yleisessä käytössä' };
+                   restricted: 'Yksityinen/kiinteistön' };
   function popupFor(spot) {
     var wrap = el('div', 'spot');
     var kind = spotKind(spot);
