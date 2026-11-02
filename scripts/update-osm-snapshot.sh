@@ -9,7 +9,12 @@
 set -e
 
 BBOX='60.175,24.800,60.195,24.850' # etelä,länsi,pohjoinen,itä
-QUERY="[out:json][timeout:60];(nwr[\"amenity\"=\"parking\"][\"fee\"=\"no\"]($BBOX);nwr[\"amenity\"=\"parking\"][!\"fee\"]($BBOX););out center tags;"
+QUERY='[out:json][timeout:60];(
+nwr["amenity"="parking"]["fee"="no"]('"$BBOX"');
+nwr["amenity"="parking"][!"fee"]('"$BBOX"');
+way["highway"][~"^parking:(left|right|both)$"~"^(lane|street_side|on_kerb|half_on_kerb|shoulder|yes)$"]('"$BBOX"');
+way["highway"][~"^parking:lane:(left|right|both)$"~"^(parallel|diagonal|perpendicular|marked|yes)$"]('"$BBOX"');
+);out center tags;'
 OUT='data/osm-otaniemi.json'
 TMP="$OUT.tmp"
 

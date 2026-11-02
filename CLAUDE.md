@@ -39,6 +39,8 @@ Clauden esikatselu (`.claude/launch.json`) käyttää porttia 8001, ettei se tö
   - `amenity=parking` ilman `fee`-tagia → hinta tuntematon
   - pois suodatetaan `access` = private, customers, permit, delivery, no, residents
   - `NOT_FREE_OSM` (index.html) piilottaa alueet, jotka OSM merkitsee ilmaisiksi, vaikka ne vaativat Aalto-yliopiston pysäköintiluvan tai ovat maksullisia. Lista on tarkistettu Aallon kampuksen pysäköintikarttaa (v8) vasten 2026-11-02. Jos OSM-alue piirretään uudelleen, sen tunniste vaihtuu ja se pitää lisätä listaan uudelleen. Parempi pitkän aikavälin korjaus on korjata tagit (`access=permit`) suoraan OSM:ään paikan päällä nähtyjen kylttien perusteella. Aallon karttaa ei voi käyttää OSM:n lähteenä, koska OSM hyväksyy vain lähteet, joiden lisenssi sen sallii, eikä Aallon kartalle ole ilmoitettu lisenssiä.
+  - Kadunvarsipysäköinti haetaan kaduille merkityistä tageista (`parking:left/right/both` ja vanhempi `parking:lane:*`, ehdot `:fee`, `:restriction`, `:access`, `parking:condition:*`). Logiikka on `streetSpot()`-funktiossa. Katuosuus näytetään yhtenä merkkinä keskikohdassaan. Se on ilmainen, jos jollain puolella on `fee=no`, `free` tai `disc`, ja muuten hinta on tuntematon.
+  - `PAID_STREETS` (index.html) piilottaa kadut, joiden kadunvarsipysäköinnin Espoo muutti maksulliseksi lokakuussa 2026 Otaniemessä ja Tapiolassa (Espoon tiedote 16.9.2026, liitekartat). OSM merkitsee monet niistä yhä ilmaisiksi. Osittain maksulliset kadut piilotetaan kokonaan varmuuden vuoksi. Muualla Espoossa (esim. Matinkylä, Kilo, Soukka, Leppävaara) maksullisuutta laajennettiin myös vuonna 2026, mutta niitä katuja ei ole listassa.
   - `fee:conditional` näytetään ponnahdusikkunassa, esimerkiksi Otaparkki: `fee=no`, mutta "Maksullinen ma-pe 08:00-18:00". Muuten osittain maksullinen paikka näyttäisi aina ilmaiselta.
   - haku vain zoomilla ≥ 14, tulos välimuistiin localStorageen 24 tunniksi
   - käynnistyksessä näytetään välimuisti tai, jos sitä ei ole, repon tilannekuva `data/osm-otaniemi.json`. Live-haku tehdään vain Hae-napista, tai jos tilannekuvaa ei saada ladattua.
@@ -81,7 +83,8 @@ Miten oikeudet toimivat:
 
 ## Tunnetut rajoitukset
 
-- Kadunvarsipysäköinti, joka on merkitty OSM:ssä suoraan katuun (`parking:left/right/both`, `parking:condition:*`), ei näy sovelluksessa, koska haku kattaa vain `amenity=parking`-alueet. Otaniemessä tällaisia katuosuuksia on noin 145, joista useimmissa on pysäköintikielto. Tiedot ovat lisäksi vanhentuneita: Espoo laajensi maksullisen kadunvarsipysäköinnin Otaniemeen lokakuussa 2026, ja sen jälkeen maksullisia ovat Jämeräntaival, Kivimiehentie, Konemiehentie (osittain), Miestentie, Otakaari (osittain), Servin Maijan tie, Tietotie, Vaisalantie ja Vuorimiehentie (Espoon tiedote 16.9.2026). OSM merkitsee monet näistä yhä ilmaisiksi tai kiekkopaikoiksi. Ennen kuin kadunvarsitiedot otetaan käyttöön, ne pitää päivittää OSM:ään.
+- OSM:n kadunvarsitiedot ovat Otaniemessä ja Tapiolassa osin vanhentuneita Espoon lokakuun 2026 maksumuutosten takia. `PAID_STREETS` paikkaa tämän, mutta pysyvä korjaus on päivittää tagit OSM:ään. Kun se on tehty, listan voi purkaa.
+- Kadunvarsimerkki on katuosuuden keskellä eikä kerro, kummalla puolella katua pysäköinti on sallittu ("vain toinen puoli"), koska OSM:n vasen/oikea riippuu siitä, mihin suuntaan katu on piirretty.
 
 - Lisäyksiä ei ole rajoitettu: kuka tahansa voi skriptillä luoda paljon anonyymejä tunnuksia ja paikkoja. Jos roskaa alkaa tulla, lisää CAPTCHA anonyymiin kirjautumiseen.
 - Haku palauttaa enintään 1000 riviä (Supabasen oletus). Kun paikkoja on enemmän, hae vain kartalla näkyvältä alueelta.

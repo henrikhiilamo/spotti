@@ -226,7 +226,7 @@
   var SUPABASE_URL = 'https://vkgjmozbqptezlopdtdd.supabase.co';
   var SUPABASE_KEY = 'sb_publishable_efHHmw_JM_7cYsJoE9Sijw_QaWi3MBm'; // Project Settings → API Keys
   var SPOT_COLUMNS = 'id, lat, lng, name, maxstay, note, created_by';
-  var OSM_CACHE_KEY = 'ilmaispaikka_osm_cache_v2'; // bump when parseOverpass rules change
+  var OSM_CACHE_KEY = 'ilmaispaikka_osm_cache_v3'; // bump when parseOverpass rules change
   var OSM_CACHE_MAX_AGE = 24 * 60 * 60 * 1000; // 1 day
   // Parking access values that mean "not for ordinary drivers"
   var BLOCKED_ACCESS = ['private', 'customers', 'permit', 'delivery', 'no', 'residents'];
@@ -251,6 +251,25 @@
     'way/709672565': 'Aalto-lupa tai maksu',
     'way/1557787296': 'maksullinen kadunvarsi'
   };
+  // Streets where Espoo made kerbside parking paid in October 2026 (press
+  // release 16.9.2026, Otaniemi and Tapiola maps). OSM still marks many of
+  // them free. Partly paid streets (e.g. Konemiehentie, Otakaari,
+  // Menninkäisentie) are hidden whole to be safe.
+  var PAID_STREETS = [
+    // Otaniemi
+    'Jämeräntaival', 'Kivimiehentie', 'Konemiehentie', 'Miestentie', 'Otakaari',
+    'Servin Maijan tie', 'Tietotie', 'Vaisalantie', 'Vuorimiehentie',
+    // Tapiola
+    'Ahertajankuja', 'Ahertajantie', 'Hakarinne', 'Itätuulenkuja', 'Kelohongantie',
+    'Menninkäisentie', 'Oravannahkatori', 'Revontulenkuja', 'Revontulentie', 'Sateenkaari',
+    'Sateenkuja', 'Sateentie', 'Tornitaso', 'Tuulikuja', 'Tuuliniitty'
+  ];
+  // Values meaning "you may park here": parking:{side} and the older parking:lane:{side}
+  var STREET_PARKING = ['lane', 'street_side', 'on_kerb', 'half_on_kerb', 'shoulder', 'yes',
+    'parallel', 'diagonal', 'perpendicular', 'marked'];
+  // Older parking:condition:{side} values that rule out ordinary free parking
+  var NOT_FREE_CONDITIONS = ['ticket', 'fee', 'no_parking', 'no_stopping', 'residents',
+    'customers', 'private', 'disabled', 'loading'];
 
   // ---------- State ----------
   var osmSpots = [];
@@ -423,8 +442,13 @@
       var lat = e.lat !== undefined ? e.lat : (e.center && e.center.lat);
       var lng = e.lon !== undefined ? e.lon : (e.center && e.center.lon);
       if (lat === undefined || lng === undefined) return;
-      if (tags.access && BLOCKED_ACCESS.indexOf(tags.access) !== -1) return;
       if (NOT_FREE_OSM[e.type + '/' + e.id]) return;
+      if (tags.highway) {
+        var street = streetSpot(e, tags, lat, lng);
+        if (street) out.push(street);
+        return;
+      }
+      if (tags.access && BLOCKED_ACCESS.indexOf(tags.access) !== -1) return;
       out.push({
         id: 'osm-' + e.type + '-' + e.id,
         source: 'osm',
@@ -449,6 +473,55 @@
     return text.replace(/\b(Mo|Tu|We|Th|Fr|Sa|Su)\b/g, function (d) { return DAYS[d]; });
   }
 
+  // Kerbside parking is tagged on the street itself, separately for each side:
+  // parking:left/right/both with :fee, :restriction, :maxstay..., or the older
+  // parking:lane:* and parking:condition:* tags. Returns null if no side is usable.
+  function streetSpot(e, tags, lat, lng) {
+    if (PAID_STREETS.indexOf(tags.name) !== -1) return null;
+    var sides = [];
+    ['left', 'right'].forEach(function (side) {
+      // 'parking:{side}:fee' -> this side's value, or the value for both sides
+      function get(key) {
+        return tags[key.replace('{side}', side)] || tags[key.replace('{side}', 'both')];
+      }
+      var where = get('parking:{side}') || get('parking:lane:{side}');
+      if (STREET_PARKING.indexOf(where) === -1) return;
+      if (get('parking:{side}:restriction')) return;
+      var access = get('parking:{side}:access');
+      if (access && BLOCKED_ACCESS.indexOf(access) !== -1) return;
+      var cond = get('parking:condition:{side}');
+      if (NOT_FREE_CONDITIONS.indexOf(cond) !== -1) return;
+      var fee = get('parking:{side}:fee');
+      if (fee === 'yes') return;
+      sides.push({
+        free: fee === 'no' || cond === 'free' || cond === 'disc',
+        disc: cond === 'disc' || get('parking:{side}:authentication:disc') === 'yes',
+        discTime: get('parking:condition:{side}:time_interval') || '',
+        maxstay: get('parking:{side}:maxstay') || get('parking:condition:{side}:maxstay') || '',
+        feeCond: get('parking:{side}:fee:conditional'),
+        restrictionCond: get('parking:{side}:restriction:conditional')
+      });
+    });
+    if (!sides.length) return null;
+
+    var s = sides.filter(function (x) { return x.free; })[0] || sides[0];
+    var notes = [sides.length === 2 ? 'Kadunvarsi, molemmat puolet' : 'Kadunvarsi, vain toinen puoli'];
+    if (s.disc) notes.push(('pysäköintikiekko ' + s.discTime).trim()
+      .replace(/\b(Mo|Tu|We|Th|Fr|Sa|Su)\b/g, function (d) { return DAYS[d]; }));
+    if (s.feeCond) notes.push(feeNote(s.feeCond));
+    if (s.restrictionCond) notes.push('rajoitus ' + s.restrictionCond);
+    return {
+      id: 'osm-' + e.type + '-' + e.id,
+      source: 'osm',
+      lat: lat,
+      lng: lng,
+      name: tags.name || 'Kadunvarsi',
+      fee: s.free ? 'no' : 'unknown',
+      maxstay: s.maxstay,
+      note: notes.join(', ')
+    };
+  }
+
   function searchArea() {
     if (map.getZoom() < MIN_SEARCH_ZOOM) {
       setStatus('Lähennä karttaa, jotta haku kohdistuu pienemmälle alueelle.');
@@ -459,6 +532,8 @@
     var query = '[out:json][timeout:25];(' +
       'nwr["amenity"="parking"]["fee"="no"](' + bbox + ');' +
       'nwr["amenity"="parking"][!"fee"](' + bbox + ');' +
+      'way["highway"][~"^parking:(left|right|both)$"~"^(lane|street_side|on_kerb|half_on_kerb|shoulder|yes)$"](' + bbox + ');' +
+      'way["highway"][~"^parking:lane:(left|right|both)$"~"^(parallel|diagonal|perpendicular|marked|yes)$"](' + bbox + ');' +
       ');out center tags;';
 
     setStatus('Haetaan paikkoja OpenStreetMapista…', true);

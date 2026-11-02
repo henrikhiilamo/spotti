@@ -2,7 +2,7 @@
   "version": 0.6,
   "generator": "Overpass API 0.7.62.11 87bfad18",
   "osm3s": {
-    "timestamp_osm_base": "2026-11-02T19:34:21Z",
+    "timestamp_osm_base": "2026-11-02T19:47:36Z",
     "copyright": "The data included in this document is from www.openstreetmap.org. The data is made available under ODbL."
   },
   "elements": [
@@ -139,6 +139,57 @@
 },
 {
   "type": "way",
+  "id": 4216844,
+  "center": {
+    "lat": 60.1892834,
+    "lon": 24.8349617
+  },
+  "tags": {
+    "bicycle": "use_sidepath",
+    "highway": "residential",
+    "lane_markings": "no",
+    "lit": "yes",
+    "loc_name": "SMT",
+    "maxspeed": "30",
+    "name": "Servin Maijan tie",
+    "name:fi": "Servin Maijan tie",
+    "name:sv": "Servi-Maijas väg",
+    "parking:condition:right": "free",
+    "parking:left": "no",
+    "parking:left:restriction": "no_parking",
+    "parking:right": "yes",
+    "parking:right:orientation": "parallel",
+    "surface": "asphalt"
+  }
+},
+{
+  "type": "way",
+  "id": 4216937,
+  "center": {
+    "lat": 60.1843193,
+    "lon": 24.8171108
+  },
+  "tags": {
+    "bicycle": "use_sidepath",
+    "highway": "unclassified",
+    "lanes": "2",
+    "lit": "yes",
+    "maxspeed": "40",
+    "name": "Tietotie",
+    "name:fi": "Tietotie",
+    "name:sv": "Datavägen",
+    "parking:condition:left": "disc",
+    "parking:condition:left:maxstay": "4 hours",
+    "parking:left": "yes",
+    "parking:left:orientation": "parallel",
+    "parking:right": "no",
+    "parking:right:restriction": "no_parking",
+    "snowplowing": "yes",
+    "surface": "asphalt"
+  }
+},
+{
+  "type": "way",
   "id": 4217760,
   "center": {
     "lat": 60.1891920,
@@ -249,6 +300,33 @@
     "amenity": "parking",
     "parking": "surface",
     "surface": "paved"
+  }
+},
+{
+  "type": "way",
+  "id": 4220249,
+  "center": {
+    "lat": 60.1887088,
+    "lon": 24.8371670
+  },
+  "tags": {
+    "highway": "residential",
+    "lane_markings": "no",
+    "lit": "yes",
+    "loc_name": "JMT",
+    "maxspeed": "30",
+    "name": "Jämeräntaival",
+    "name:fi": "Jämeräntaival",
+    "name:sv": "Bistervägen",
+    "parking:condition:left": "disc",
+    "parking:condition:left:maxstay": "4 h",
+    "parking:condition:left:time_interval": "Mo-Fr 08:00-18:00",
+    "parking:condition:right:reason": "area",
+    "parking:left": "yes",
+    "parking:left:orientation": "parallel",
+    "parking:right": "no",
+    "parking:right:restriction": "no_parking",
+    "surface": "asphalt"
   }
 },
 {
@@ -395,6 +473,56 @@
 },
 {
   "type": "way",
+  "id": 8135519,
+  "center": {
+    "lat": 60.1808746,
+    "lon": 24.8437422
+  },
+  "tags": {
+    "bicycle": "use_sidepath",
+    "embankment": "yes",
+    "highway": "secondary",
+    "lanes": "2",
+    "lit": "yes",
+    "maxspeed": "50",
+    "name": "Kuusisaarentie",
+    "name:fi": "Kuusisaarentie",
+    "name:sv": "Granövägen",
+    "parking:both": "lane",
+    "parking:both:informal": "yes",
+    "parking:both:orientation": "parallel",
+    "paved:date": "2012",
+    "snowplowing": "yes",
+    "surface": "asphalt"
+  }
+},
+{
+  "type": "way",
+  "id": 8654477,
+  "center": {
+    "lat": 60.1874730,
+    "lon": 24.8102802
+  },
+  "tags": {
+    "bicycle": "use_sidepath",
+    "highway": "unclassified",
+    "lane_markings": "no",
+    "lit": "yes",
+    "maxspeed": "30",
+    "name": "Vaisalantie",
+    "name:fi": "Vaisalantie",
+    "name:sv": "Vaisalavägen",
+    "oneway": "no",
+    "parking:both": "yes",
+    "parking:both:orientation": "parallel",
+    "parking:condition:both": "free",
+    "snowplowing": "yes",
+    "surface": "asphalt",
+    "width": "3"
+  }
+},
+{
+  "type": "way",
   "id": 22963883,
   "center": {
     "lat": 60.1895152,
@@ -410,6 +538,24 @@
     "snowplowing": "yes",
     "source": "Bing",
     "surface": "paved"
+  }
+},
+{
+  "type": "way",
+  "id": 23016159,
+  "center": {
+    "lat": 60.1826541,
+    "lon": 24.8132399
+  },
+  "tags": {
+    "highway": "unclassified",
+    "lit": "yes",
+    "maxspeed": "30",
+    "oneway": "yes",
+    "parking:both": "yes",
+    "parking:both:orientation": "parallel",
+    "parking:condition:both": "private",
+    "surface": "asphalt"
   }
 },
 {
@@ -665,6 +811,28 @@
     "foot": "yes",
     "motorcar": "private",
     "parking": "surface"
+  }
+},
+{
+  "type": "way",
+  "id": 26133345,
+  "center": {
+    "lat": 60.1820552,
+    "lon": 24.8484110
+  },
+  "tags": {
+    "highway": "residential",
+    "lit": "yes",
+    "maxspeed": "30",
+    "name": "Liljasaarentie",
+    "name:fi": "Liljasaarentie",
+    "name:sv": "Liljeholmsvägen",
+    "parking:both": "lane",
+    "parking:both:orientation": "parallel",
+    "parking:condition:both": "free",
+    "snowplowing": "yes",
+    "surface": "asphalt",
+    "width": "7"
   }
 },
 {
@@ -1825,6 +1993,211 @@
 },
 {
   "type": "way",
+  "id": 61765145,
+  "center": {
+    "lat": 60.1786120,
+    "lon": 24.8107742
+  },
+  "tags": {
+    "highway": "residential",
+    "lane_markings": "no",
+    "lanes": "2",
+    "maxspeed": "30",
+    "name": "Menninkäisentie",
+    "name:fi": "Menninkäisentie",
+    "name:sv": "Rådarvägen",
+    "parking:condition:right": "disc",
+    "parking:condition:right:maxstay": "60min",
+    "parking:condition:right:time_interval": "Mo-Fr 07:00-17:00",
+    "parking:right": "lane",
+    "parking:right:orientation": "parallel",
+    "source:name:sv": "Digiroad.fi",
+    "surface": "asphalt"
+  }
+},
+{
+  "type": "way",
+  "id": 61765146,
+  "center": {
+    "lat": 60.1786867,
+    "lon": 24.8112701
+  },
+  "tags": {
+    "highway": "residential",
+    "lane_markings": "no",
+    "lanes": "2",
+    "maxspeed": "30",
+    "name": "Mäntyviita",
+    "name:fi": "Mäntyviita",
+    "name:sv": "Tallbysket",
+    "parking:condition:right": "disc",
+    "parking:condition:right:maxstay": "4 h",
+    "parking:condition:right:time_interval": "Mo-Fr 06:00-20:00",
+    "parking:right": "lane",
+    "parking:right:orientation": "parallel",
+    "surface": "asphalt"
+  }
+},
+{
+  "type": "way",
+  "id": 61765147,
+  "center": {
+    "lat": 60.1783805,
+    "lon": 24.8109513
+  },
+  "tags": {
+    "highway": "residential",
+    "lane_markings": "no",
+    "lanes": "2",
+    "maxspeed": "30",
+    "name": "Menninkäisentie",
+    "name:fi": "Menninkäisentie",
+    "name:sv": "Rådarvägen",
+    "parking:condition:right": "disc",
+    "parking:condition:right:maxstay": "60min",
+    "parking:condition:right:time_interval": "Mo-Fr 07:00-17:00",
+    "parking:left": "no",
+    "parking:left:restriction": "no_stopping",
+    "parking:right": "lane",
+    "parking:right:orientation": "parallel",
+    "sidewalk:left": "no",
+    "sidewalk:right": "separate",
+    "source:name:sv": "Digiroad.fi",
+    "surface": "asphalt"
+  }
+},
+{
+  "type": "way",
+  "id": 76730806,
+  "center": {
+    "lat": 60.1846035,
+    "lon": 24.8190211
+  },
+  "tags": {
+    "bicycle": "use_sidepath",
+    "highway": "unclassified",
+    "lanes": "2",
+    "lit": "yes",
+    "maxspeed": "40",
+    "name": "Tietotie",
+    "name:fi": "Tietotie",
+    "name:sv": "Datavägen",
+    "parking:condition:left": "disc",
+    "parking:condition:left:maxstay": "4 hours",
+    "parking:left": "yes",
+    "parking:left:orientation": "parallel",
+    "parking:right": "no",
+    "parking:right:restriction": "no_parking",
+    "snowplowing": "yes",
+    "surface": "asphalt",
+    "zone:traffic": "FI:urban"
+  }
+},
+{
+  "type": "way",
+  "id": 76730817,
+  "center": {
+    "lat": 60.1844203,
+    "lon": 24.8180676
+  },
+  "tags": {
+    "bicycle": "use_sidepath",
+    "highway": "unclassified",
+    "lanes": "2",
+    "lit": "yes",
+    "maxspeed": "40",
+    "name": "Tietotie",
+    "name:fi": "Tietotie",
+    "name:sv": "Datavägen",
+    "parking:both": "yes",
+    "parking:both:orientation": "parallel",
+    "parking:condition:both": "disc",
+    "parking:condition:both:maxstay": "4 hours",
+    "snowplowing": "yes",
+    "surface": "asphalt"
+  }
+},
+{
+  "type": "way",
+  "id": 78502269,
+  "center": {
+    "lat": 60.1790316,
+    "lon": 24.8287738
+  },
+  "tags": {
+    "bicycle": "use_sidepath",
+    "highway": "secondary",
+    "lanes": "2",
+    "lit": "yes",
+    "maxspeed": "40",
+    "name": "Miestentie",
+    "name:fi": "Miestentie",
+    "name:sv": "Karlfolksvägen",
+    "parking:condition:left": "disc",
+    "parking:condition:left:maxstay": "1 h",
+    "parking:lane:left:parallel": "lay_by",
+    "parking:left": "yes",
+    "parking:left:orientation": "parallel",
+    "parking:right": "no",
+    "parking:right:restriction": "no_parking",
+    "snowplowing": "yes",
+    "surface": "asphalt"
+  }
+},
+{
+  "type": "way",
+  "id": 78502270,
+  "center": {
+    "lat": 60.1792236,
+    "lon": 24.8302499
+  },
+  "tags": {
+    "bicycle": "use_sidepath",
+    "highway": "secondary",
+    "lanes": "2",
+    "lit": "yes",
+    "maxspeed": "40",
+    "name": "Miestentie",
+    "name:fi": "Miestentie",
+    "name:sv": "Karlfolksvägen",
+    "parking:condition:right": "disc",
+    "parking:condition:right:maxstay": "4 h",
+    "parking:lane:right:parallel": "lay_by",
+    "parking:left": "no",
+    "parking:left:restriction": "no_parking",
+    "parking:right": "yes",
+    "parking:right:orientation": "parallel",
+    "snowplowing": "yes",
+    "surface": "asphalt"
+  }
+},
+{
+  "type": "way",
+  "id": 78722622,
+  "center": {
+    "lat": 60.1810862,
+    "lon": 24.8454390
+  },
+  "tags": {
+    "bicycle": "use_sidepath",
+    "highway": "secondary",
+    "lanes": "2",
+    "lit": "yes",
+    "maxspeed": "50",
+    "name": "Kuusisaarentie",
+    "name:fi": "Kuusisaarentie",
+    "name:sv": "Granövägen",
+    "parking:left": "lane",
+    "parking:left:informal": "yes",
+    "parking:left:orientation": "parallel",
+    "parking:right:restriction": "no_stopping",
+    "paved:date": "2012",
+    "snowplowing": "yes",
+    "surface": "asphalt"
+  }
+},
+{
+  "type": "way",
   "id": 80401759,
   "center": {
     "lat": 60.1871729,
@@ -1850,6 +2223,158 @@
     "access": "private",
     "amenity": "parking",
     "parking": "surface"
+  }
+},
+{
+  "type": "way",
+  "id": 81193128,
+  "center": {
+    "lat": 60.1888588,
+    "lon": 24.8267411
+  },
+  "tags": {
+    "check_date": "2026-05-03",
+    "check_date:surface": "2026-05-03",
+    "highway": "unclassified",
+    "lanes": "2",
+    "lit": "yes",
+    "name": "Sähkömiehentie",
+    "name:fi": "Sähkömiehentie",
+    "name:sv": "Strömkarlsvägen",
+    "parking:condition:left": "free",
+    "parking:left": "yes",
+    "parking:left:orientation": "parallel",
+    "parking:right": "no",
+    "parking:right:restriction": "no_parking",
+    "snowplowing": "yes",
+    "surface": "asphalt"
+  }
+},
+{
+  "type": "way",
+  "id": 81193136,
+  "center": {
+    "lat": 60.1892226,
+    "lon": 24.8255917
+  },
+  "tags": {
+    "check_date": "2021-10-20",
+    "highway": "unclassified",
+    "lanes": "2",
+    "lit": "yes",
+    "name": "Sähkömiehentie",
+    "name:fi": "Sähkömiehentie",
+    "name:sv": "Strömkarlsvägen",
+    "parking:condition:left": "free",
+    "parking:left": "yes",
+    "parking:left:orientation": "parallel",
+    "parking:right": "no",
+    "parking:right:restriction": "no_parking",
+    "snowplowing": "yes",
+    "surface": "paved"
+  }
+},
+{
+  "type": "way",
+  "id": 85512388,
+  "center": {
+    "lat": 60.1900694,
+    "lon": 24.8392373
+  },
+  "tags": {
+    "highway": "residential",
+    "lane_markings": "no",
+    "lit": "yes",
+    "loc_name": "JMT",
+    "maxspeed": "30",
+    "name": "Jämeräntaival",
+    "name:fi": "Jämeräntaival",
+    "name:sv": "Bistervägen",
+    "parking:condition:left": "disc",
+    "parking:condition:left:maxstay": "15 min",
+    "parking:condition:right:reason": "area",
+    "parking:left": "yes",
+    "parking:left:orientation": "parallel",
+    "parking:right": "no",
+    "parking:right:restriction": "no_parking",
+    "surface": "asphalt"
+  }
+},
+{
+  "type": "way",
+  "id": 85512599,
+  "center": {
+    "lat": 60.1901804,
+    "lon": 24.8369425
+  },
+  "tags": {
+    "cycleway:both": "no",
+    "highway": "residential",
+    "lane_markings": "no",
+    "lit": "yes",
+    "loc_name": "SMT",
+    "maxspeed": "30",
+    "name": "Servin Maijan tie",
+    "name:fi": "Servin Maijan tie",
+    "name:sv": "Servi-Maijas väg",
+    "parking:condition:left": "private",
+    "parking:condition:left:default": "free",
+    "parking:condition:left:private": "päiväkoti",
+    "parking:condition:left:time_interval": "Mo-Fr 07:00-18:00",
+    "parking:left": "yes",
+    "parking:left:orientation": "diagonal",
+    "sidewalk:left": "separate",
+    "sidewalk:right": "no",
+    "surface": "asphalt"
+  }
+},
+{
+  "type": "way",
+  "id": 85512600,
+  "center": {
+    "lat": 60.1905420,
+    "lon": 24.8375757
+  },
+  "tags": {
+    "bicycle": "use_sidepath",
+    "cycleway:both": "no",
+    "highway": "residential",
+    "lane_markings": "no",
+    "lit": "yes",
+    "loc_name": "SMT",
+    "maxspeed": "30",
+    "name": "Servin Maijan tie",
+    "name:fi": "Servin Maijan tie",
+    "name:sv": "Servi-Maijas väg",
+    "parking:condition:left": "free",
+    "parking:left": "yes",
+    "parking:left:orientation": "diagonal",
+    "sidewalk:left": "separate",
+    "sidewalk:right": "no",
+    "surface": "asphalt"
+  }
+},
+{
+  "type": "way",
+  "id": 85512601,
+  "center": {
+    "lat": 60.1898452,
+    "lon": 24.8360341
+  },
+  "tags": {
+    "bicycle": "use_sidepath",
+    "highway": "residential",
+    "lane_markings": "no",
+    "lit": "yes",
+    "loc_name": "SMT",
+    "maxspeed": "30",
+    "name": "Servin Maijan tie",
+    "name:fi": "Servin Maijan tie",
+    "name:sv": "Servi-Maijas väg",
+    "parking:condition:left": "free",
+    "parking:left": "yes",
+    "parking:left:orientation": "diagonal",
+    "surface": "asphalt"
   }
 },
 {
@@ -1968,6 +2493,147 @@
 },
 {
   "type": "way",
+  "id": 95801289,
+  "center": {
+    "lat": 60.1885987,
+    "lon": 24.8241393
+  },
+  "tags": {
+    "bicycle": "yes",
+    "check_date": "2022-07-14",
+    "highway": "unclassified",
+    "lanes": "2",
+    "lit": "yes",
+    "name": "Konemiehentie",
+    "name:fi": "Konemiehentie",
+    "name:sv": "Maskinbyggarvägen",
+    "parking:both": "yes",
+    "parking:both:orientation": "parallel",
+    "parking:condition:both": "free",
+    "snowplowing": "yes",
+    "surface": "asphalt"
+  }
+},
+{
+  "type": "way",
+  "id": 96149961,
+  "center": {
+    "lat": 60.1817867,
+    "lon": 24.8244141
+  },
+  "tags": {
+    "cycleway:both": "separate",
+    "highway": "tertiary",
+    "lanes": "2",
+    "lit": "yes",
+    "maxspeed": "40",
+    "name": "Vuorimiehentie",
+    "name:fi": "Vuorimiehentie",
+    "name:sv": "Bergsmansvägen",
+    "parking:condition:left": "disc",
+    "parking:condition:left:maxstay": "30 min",
+    "parking:left": "yes",
+    "parking:left:orientation": "parallel",
+    "parking:right": "no",
+    "parking:right:restriction": "no_parking",
+    "sidewalk:both": "separate",
+    "snowplowing": "yes",
+    "surface": "asphalt"
+  }
+},
+{
+  "type": "way",
+  "id": 97103428,
+  "center": {
+    "lat": 60.1846745,
+    "lon": 24.8045809
+  },
+  "tags": {
+    "bicycle": "use_sidepath",
+    "highway": "secondary",
+    "lanes": "2",
+    "lanes:backward": "1",
+    "lanes:forward": "1",
+    "lit": "yes",
+    "maxspeed": "50",
+    "name": "Kalevalantie",
+    "name:fi": "Kalevalantie",
+    "name:sv": "Kalevalavägen",
+    "parking:condition:right": "disc",
+    "parking:condition:right:default": "free",
+    "parking:condition:right:maxstay": "30 min",
+    "parking:condition:right:time_interval": "Mo-Fr 07:00-18:00",
+    "parking:left": "no",
+    "parking:left:restriction": "no_parking",
+    "parking:right": "yes",
+    "parking:right:orientation": "parallel",
+    "snowplowing": "yes",
+    "source:name:sv": "Digiroad.fi",
+    "surface": "asphalt"
+  }
+},
+{
+  "type": "way",
+  "id": 97848526,
+  "center": {
+    "lat": 60.1796818,
+    "lon": 24.8004460
+  },
+  "tags": {
+    "cycleway:left": "separate",
+    "cycleway:right": "no",
+    "highway": "unclassified",
+    "lane_markings": "no",
+    "lit": "yes",
+    "maxspeed": "30",
+    "motor_vehicle": "destination",
+    "name": "Opintie",
+    "name:fi": "Opintie",
+    "name:sv": "Studievägen",
+    "parking:condition:left": "disc",
+    "parking:condition:left:maxstay": "15 min",
+    "parking:lane:left:perpendicular": "lay_by",
+    "parking:left": "yes",
+    "parking:left:orientation": "perpendicular",
+    "parking:right": "no",
+    "parking:right:restriction": "no_parking",
+    "sidewalk:left": "separate",
+    "sidewalk:right": "no",
+    "snowplowing": "yes",
+    "surface": "asphalt"
+  }
+},
+{
+  "type": "way",
+  "id": 97848530,
+  "center": {
+    "lat": 60.1789169,
+    "lon": 24.8019939
+  },
+  "tags": {
+    "highway": "residential",
+    "lane_markings": "yes",
+    "lanes": "2",
+    "lanes:backward": "1",
+    "lanes:forward": "1",
+    "lit": "yes",
+    "maxspeed": "30",
+    "name": "Kaupinkalliontie",
+    "name:fi": "Kaupinkalliontie",
+    "name:sv": "Krämarbergsvägen",
+    "parking:condition:left": "disc",
+    "parking:condition:left:maxstay": "15 min",
+    "parking:lane:left:parallel": "on_kerb",
+    "parking:left": "yes",
+    "parking:left:orientation": "parallel",
+    "parking:right": "no",
+    "parking:right:restriction": "no_stopping",
+    "snowplowing": "yes",
+    "surface": "asphalt"
+  }
+},
+{
+  "type": "way",
   "id": 109233516,
   "center": {
     "lat": 60.1804840,
@@ -1979,6 +2645,51 @@
     "parking": "surface",
     "parking:condition": "free",
     "surface": "paved"
+  }
+},
+{
+  "type": "way",
+  "id": 109355405,
+  "center": {
+    "lat": 60.1803984,
+    "lon": 24.8502089
+  },
+  "tags": {
+    "highway": "residential",
+    "lanes": "2",
+    "lit": "yes",
+    "maxspeed": "30",
+    "name": "Lehdesniityntie",
+    "name:fi": "Lehdesniityntie",
+    "name:sv": "Lövängsvägen",
+    "parking:condition:right": "disc",
+    "parking:condition:right:default": "free",
+    "parking:condition:right:maxstay": "4 h",
+    "parking:condition:right:time_interval": "Mo-Fr 06:00-24:00",
+    "parking:right": "lane",
+    "parking:right:orientation": "parallel",
+    "surface": "asphalt"
+  }
+},
+{
+  "type": "way",
+  "id": 109355411,
+  "center": {
+    "lat": 60.1803352,
+    "lon": 24.8486274
+  },
+  "tags": {
+    "highway": "residential",
+    "lanes": "2",
+    "lit": "yes",
+    "maxspeed": "30",
+    "name": "Lehdesniityntie",
+    "name:fi": "Lehdesniityntie",
+    "name:sv": "Lövängsvägen",
+    "parking:right": "lane",
+    "parking:right:fee": "no",
+    "parking:right:orientation": "parallel",
+    "surface": "asphalt"
   }
 },
 {
@@ -2546,6 +3257,54 @@
     "maxweight": "4",
     "parking": "surface",
     "parking:condition:area": "private"
+  }
+},
+{
+  "type": "way",
+  "id": 305408546,
+  "center": {
+    "lat": 60.1877882,
+    "lon": 24.8101209
+  },
+  "tags": {
+    "bicycle": "use_sidepath",
+    "highway": "unclassified",
+    "lane_markings": "no",
+    "lit": "yes",
+    "maxspeed": "30",
+    "name": "Vaisalantie",
+    "name:fi": "Vaisalantie",
+    "name:sv": "Vaisalavägen",
+    "parking:both": "yes",
+    "parking:both:orientation": "parallel",
+    "parking:condition:right": "disc",
+    "parking:condition:right:maxstay": "24h",
+    "snowplowing": "yes",
+    "surface": "asphalt"
+  }
+},
+{
+  "type": "way",
+  "id": 305408547,
+  "center": {
+    "lat": 60.1886373,
+    "lon": 24.8098468
+  },
+  "tags": {
+    "bicycle": "use_sidepath",
+    "highway": "unclassified",
+    "lane_markings": "no",
+    "lit": "yes",
+    "maxspeed": "30",
+    "name": "Vaisalantie",
+    "name:fi": "Vaisalantie",
+    "name:sv": "Vaisalavägen",
+    "parking:both": "yes",
+    "parking:both:orientation": "parallel",
+    "parking:condition:right": "disc",
+    "parking:condition:right:maxstay": "24h",
+    "snowplowing": "yes",
+    "surface": "asphalt"
   }
 },
 {
@@ -3668,6 +4427,30 @@
 },
 {
   "type": "way",
+  "id": 747405865,
+  "center": {
+    "lat": 60.1886719,
+    "lon": 24.8273366
+  },
+  "tags": {
+    "check_date": "2021-10-20",
+    "highway": "unclassified",
+    "lanes": "2",
+    "lit": "yes",
+    "name": "Sähkömiehentie",
+    "name:fi": "Sähkömiehentie",
+    "name:sv": "Strömkarlsvägen",
+    "parking:condition:left": "free",
+    "parking:left": "yes",
+    "parking:left:orientation": "parallel",
+    "parking:right": "no",
+    "parking:right:restriction": "no_parking",
+    "snowplowing": "yes",
+    "surface": "asphalt"
+  }
+},
+{
+  "type": "way",
   "id": 756673138,
   "center": {
     "lat": 60.1827933,
@@ -3827,6 +4610,32 @@
   "tags": {
     "amenity": "parking",
     "parking": "street_side"
+  }
+},
+{
+  "type": "way",
+  "id": 941370252,
+  "center": {
+    "lat": 60.1842518,
+    "lon": 24.8164048
+  },
+  "tags": {
+    "bicycle": "use_sidepath",
+    "highway": "unclassified",
+    "lanes": "2",
+    "lit": "yes",
+    "maxspeed": "40",
+    "name": "Tietotie",
+    "name:fi": "Tietotie",
+    "name:sv": "Datavägen",
+    "parking:condition:left": "disc",
+    "parking:condition:left:maxstay": "4 hours",
+    "parking:left": "yes",
+    "parking:left:orientation": "parallel",
+    "parking:right": "no",
+    "parking:right:restriction": "no_parking",
+    "snowplowing": "yes",
+    "surface": "asphalt"
   }
 },
 {
@@ -4115,6 +4924,31 @@
     "motorcar": "private",
     "note": "Vain yliopiston luvalla",
     "parking": "surface"
+  }
+},
+{
+  "type": "way",
+  "id": 1230073681,
+  "center": {
+    "lat": 60.1757106,
+    "lon": 24.8296282
+  },
+  "tags": {
+    "bicycle": "use_sidepath",
+    "highway": "tertiary",
+    "lanes": "2",
+    "lit": "yes",
+    "maxspeed": "30",
+    "name": "Keilaniementie",
+    "name:fi": "Keilaniementie",
+    "name:sv": "Kägeluddsvägen",
+    "oneway": "yes",
+    "parking:left": "no",
+    "parking:left:restriction": "no_parking",
+    "parking:right": "on_kerb",
+    "parking:right:maxstay": "15 minutes",
+    "parking:right:orientation": "parallel",
+    "surface": "asphalt"
   }
 },
 {
