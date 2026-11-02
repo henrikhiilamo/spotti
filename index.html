@@ -1,0 +1,538 @@
+<!doctype html>
+<html lang="fi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Ilmaispaikka – ilmaiset pysäköintipaikat kartalla</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<style>
+  :root {
+    --sign-blue: #17479e;
+    --ink: #1b2430;
+    --snow: #f4f7fa;
+    --line: #d5dce5;
+    --free: #1e9e6a;
+    --unknown: #8a94a3;
+    --user: #d98a00;
+    --danger: #b3261e;
+    --radius: 10px;
+    --font: "Barlow", system-ui, -apple-system, "Segoe UI", sans-serif;
+  }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; margin: 0; }
+  body {
+    font-family: var(--font);
+    color: var(--ink);
+    background: var(--snow);
+    font-size: 16px;
+    line-height: 1.4;
+  }
+  #app { position: fixed; inset: 0; display: flex; flex-direction: column; }
+
+  /* Top bar */
+  header {
+    background: var(--sign-blue);
+    color: #fff;
+    padding: calc(10px + env(safe-area-inset-top, 0px)) 14px 10px;
+    z-index: 1000;
+  }
+  .brand { display: flex; align-items: center; gap: 10px; }
+  .brand-mark {
+    width: 30px; height: 30px; border-radius: 6px;
+    background: #fff; color: var(--sign-blue);
+    display: grid; place-items: center;
+    font-weight: 700; font-size: 20px; line-height: 1;
+  }
+  h1 { font-size: 20px; margin: 0; font-weight: 700; letter-spacing: 0.01em; }
+  .tagline { margin: 0 0 0 auto; font-size: 13px; opacity: 0.85; }
+  .filters { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+  .filters label {
+    display: inline-flex; align-items: center; gap: 7px;
+    background: rgba(255,255,255,0.12);
+    border: 1px solid rgba(255,255,255,0.28);
+    border-radius: 999px; padding: 5px 11px 5px 9px;
+    font-size: 14px; cursor: pointer; user-select: none;
+  }
+  .filters input { position: absolute; opacity: 0; pointer-events: none; }
+  .filters .dot { width: 12px; height: 12px; border-radius: 50%; border: 2px solid #fff; background: transparent; }
+  .filters input:checked + .dot.free { background: var(--free); border-color: var(--free); }
+  .filters input:checked + .dot.unknown { background: var(--unknown); border-color: var(--unknown); }
+  .filters input:checked + .dot.user { background: var(--user); border-color: var(--user); }
+  .filters label:has(input:checked) { background: rgba(255,255,255,0.24); }
+  .filters label:has(input:focus-visible) { outline: 3px solid #fff; outline-offset: 2px; }
+
+  /* Map */
+  .map-wrap { flex: 1; min-height: 0; position: relative; }
+  #map { position: absolute; inset: 0; z-index: 1; }
+  #map.adding { cursor: crosshair; }
+
+  .pin {
+    width: 28px; height: 28px; border-radius: 50%;
+    display: grid; place-items: center;
+    color: #fff; font-weight: 700; font-size: 15px;
+    border: 3px solid #fff;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.45);
+  }
+  .pin.free { background: var(--free); }
+  .pin.unknown { background: var(--unknown); }
+  .pin.user { background: var(--user); }
+  .leaflet-div-icon.pin-wrap { background: none; border: none; }
+
+  /* Bottom controls */
+  .controls {
+    position: absolute; left: 0; right: 0;
+    bottom: 14px;
+    display: flex; flex-direction: column; align-items: center; gap: 8px;
+    z-index: 900; pointer-events: none;
+  }
+  .controls > * { pointer-events: auto; }
+  .row { display: flex; gap: 8px; }
+  button {
+    font: inherit; font-weight: 600; cursor: pointer;
+    border-radius: var(--radius); border: 1px solid transparent;
+    padding: 11px 16px; min-height: 44px;
+  }
+  button:focus-visible, input:focus-visible, textarea:focus-visible { outline: 3px solid #ffbf47; outline-offset: 2px; }
+  .btn-primary { background: var(--sign-blue); color: #fff; box-shadow: 0 2px 8px rgba(0,0,0,0.3); }
+  .btn-secondary { background: #fff; color: var(--ink); border-color: var(--line); box-shadow: 0 2px 8px rgba(0,0,0,0.2); }
+  .btn-danger { background: #fff; color: var(--danger); border-color: var(--danger); padding: 7px 12px; min-height: 36px; }
+
+  #status {
+    background: var(--ink); color: #fff;
+    border-radius: 999px; padding: 6px 14px; font-size: 14px;
+    max-width: calc(100% - 28px); text-align: center;
+  }
+  #status[hidden] { display: none; }
+
+  .notice {
+    background: #fff7e0; color: #5a4300;
+    border-top: 1px solid #f0dca0;
+    font-size: 13px; padding: 6px 14px;
+    padding-bottom: calc(6px + env(safe-area-inset-bottom, 0px));
+    z-index: 1000;
+  }
+
+  /* Popup */
+  .spot h3 { margin: 0 0 4px; font-size: 16px; }
+  .spot .meta { margin: 0 0 6px; font-size: 14px; color: #4a5565; }
+  .spot .tag {
+    display: inline-block; font-size: 12px; font-weight: 600;
+    padding: 2px 8px; border-radius: 999px; color: #fff; margin-bottom: 6px;
+  }
+  .spot .tag.free { background: var(--free); }
+  .spot .tag.unknown { background: var(--unknown); }
+  .spot .tag.user { background: var(--user); }
+  .spot .actions { display: flex; gap: 8px; align-items: center; margin-top: 8px; }
+  .spot a.route {
+    background: var(--sign-blue); color: #fff; text-decoration: none; font-weight: 600;
+    padding: 7px 12px; border-radius: var(--radius); font-size: 14px;
+  }
+
+  /* Dialog */
+  dialog {
+    border: none; border-radius: 14px; padding: 0;
+    width: min(420px, calc(100% - 28px));
+    box-shadow: 0 10px 40px rgba(0,0,0,0.35);
+    color: var(--ink); font-family: var(--font);
+  }
+  dialog::backdrop { background: rgba(10,20,40,0.5); }
+  dialog form { padding: 18px; display: grid; gap: 12px; }
+  dialog h2 { margin: 0; font-size: 20px; }
+  dialog label { display: grid; gap: 4px; font-weight: 600; font-size: 14px; }
+  dialog input, dialog textarea {
+    font: inherit; font-weight: 400; padding: 9px 11px;
+    border: 1px solid var(--line); border-radius: 8px; width: 100%;
+  }
+  .hint { font-weight: 400; color: #5b6676; font-size: 13px; }
+  .dialog-actions { display: flex; justify-content: flex-end; gap: 8px; }
+
+  @media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; transition: none !important; } }
+  @media (max-width: 480px) { .tagline { display: none; } }
+</style>
+</head>
+<body>
+<div id="app">
+  <header>
+    <div class="brand">
+      <div class="brand-mark" aria-hidden="true">P</div>
+      <h1>Ilmaispaikka</h1>
+      <p class="tagline">Ilmaiset parkkipaikat kartalla</p>
+    </div>
+    <div class="filters" role="group" aria-label="Näytettävät paikat">
+      <label><input type="checkbox" id="f-free" checked><span class="dot free"></span>Ilmaiset (OSM)</label>
+      <label><input type="checkbox" id="f-unknown"><span class="dot unknown"></span>Hinta tuntematon</label>
+      <label><input type="checkbox" id="f-user" checked><span class="dot user"></span>Käyttäjien lisäämät</label>
+    </div>
+  </header>
+
+  <div class="map-wrap">
+    <div id="map" aria-label="Kartta pysäköintipaikoista"></div>
+
+    <div class="controls">
+      <div id="status" role="status" hidden></div>
+      <div class="row">
+        <button class="btn-secondary" id="btn-search">Hae tältä alueelta</button>
+        <button class="btn-primary" id="btn-add">Lisää paikka</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="notice">Tarkista aina pysäköintikyltit paikan päällä. Kartan tiedot voivat olla vanhentuneita.</div>
+</div>
+
+<dialog id="dlg">
+  <form id="form">
+    <h2>Lisää ilmainen paikka</h2>
+    <label>Nimi tai kuvaus
+      <input id="in-name" required maxlength="80" placeholder="Esim. Otaniementie, kadunvarsi">
+    </label>
+    <label>Enimmäisaika
+      <input id="in-maxstay" maxlength="40" placeholder="Esim. 4 h, ei rajoitusta">
+    </label>
+    <label>Huomio
+      <textarea id="in-note" rows="2" maxlength="200" placeholder="Esim. täyttyy ennen klo 9, kyltti: ark. 8–18 max 2 h"></textarea>
+      <span class="hint">Kirjoita sääntö niin kuin kyltissä lukee. Se auttaa muita tarkistamaan tiedon.</span>
+    </label>
+    <div class="dialog-actions">
+      <button type="button" class="btn-secondary" id="btn-cancel">Peruuta</button>
+      <button type="submit" class="btn-primary">Tallenna paikka</button>
+    </div>
+  </form>
+</dialog>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script>
+(function () {
+  'use strict';
+
+  // ---------- Config ----------
+  var START_CENTER = [60.1844, 24.8300]; // Otaniemi
+  var START_ZOOM = 15;
+  var MIN_SEARCH_ZOOM = 14;
+  var OVERPASS_URLS = [
+    'https://overpass-api.de/api/interpreter',
+    'https://overpass.private.coffee/api/interpreter'
+  ];
+  var LS_KEY = 'ilmaispaikka_user_spots_v1';
+  var OSM_CACHE_KEY = 'ilmaispaikka_osm_cache_v1';
+  var OSM_CACHE_MAX_AGE = 24 * 60 * 60 * 1000; // 1 day
+  // Parking access values that mean "not for ordinary drivers"
+  var BLOCKED_ACCESS = ['private', 'customers', 'permit', 'delivery', 'no', 'residents'];
+
+  // ---------- State ----------
+  var osmSpots = [];
+  var userSpots = loadUserSpots();
+  var addMode = false;
+
+  var layers = {
+    free: L.layerGroup(),
+    unknown: L.layerGroup(),
+    user: L.layerGroup()
+  };
+
+  // ---------- Map ----------
+  var map = L.map('map', { zoomControl: true }).setView(START_CENTER, START_ZOOM);
+  // Basemap providers, tried in order. If one refuses tiles before any
+  // load successfully, the next one is used automatically.
+  var TILE_PROVIDERS = [
+    {
+      url: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+      opts: { maxZoom: 19, attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>-tekijät' }
+    },
+    {
+      url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}',
+      opts: { maxZoom: 19, attribution: 'Karttapohja &copy; Esri' }
+    }
+  ];
+  var providerIndex = 0;
+  var tiles = null;
+  function useProvider(i) {
+    if (tiles) map.removeLayer(tiles);
+    var p = TILE_PROVIDERS[i];
+    var errors = 0, loaded = false;
+    var layer = L.tileLayer(p.url, p.opts).addTo(map);
+    tiles = layer;
+    layer.on('tileload', function () { loaded = true; });
+    layer.on('tileerror', function () {
+      if (tiles !== layer || loaded) return;
+      errors++;
+      if (errors < 3) return;
+      if (providerIndex < TILE_PROVIDERS.length - 1) {
+        providerIndex++;
+        useProvider(providerIndex);
+      } else {
+        setStatus('Karttapohja ei lataudu. Avaa sivu paikallisen palvelimen kautta (localhost).', true);
+      }
+    });
+  }
+  useProvider(0);
+  layers.free.addTo(map);
+  layers.unknown.addTo(map);
+  layers.user.addTo(map);
+
+  // ---------- Helpers ----------
+  var statusEl = document.getElementById('status');
+  var statusTimer = null;
+  function setStatus(text, sticky) {
+    clearTimeout(statusTimer);
+    if (!text) { statusEl.hidden = true; return; }
+    statusEl.textContent = text;
+    statusEl.hidden = false;
+    if (!sticky) statusTimer = setTimeout(function () { statusEl.hidden = true; }, 4000);
+  }
+
+  function loadUserSpots() {
+    try {
+      var raw = localStorage.getItem(LS_KEY);
+      var parsed = raw ? JSON.parse(raw) : [];
+      return Array.isArray(parsed) ? parsed : [];
+    } catch (e) { return []; }
+  }
+  function saveUserSpots() {
+    try { localStorage.setItem(LS_KEY, JSON.stringify(userSpots)); }
+    catch (e) { setStatus('Tallennus ei onnistunut tässä selaimessa.'); }
+  }
+
+  function makeIcon(kind) {
+    return L.divIcon({
+      className: 'pin-wrap',
+      html: '<div class="pin ' + kind + '">P</div>',
+      iconSize: [28, 28],
+      iconAnchor: [14, 14],
+      popupAnchor: [0, -14]
+    });
+  }
+
+  function el(tag, cls, text) {
+    var n = document.createElement(tag);
+    if (cls) n.className = cls;
+    if (text) n.textContent = text;
+    return n;
+  }
+
+  // Popup content is built with DOM nodes + textContent so that tag text
+  // from OSM or users can never inject HTML.
+  function popupFor(spot) {
+    var wrap = el('div', 'spot');
+    var kind = spot.source === 'user' ? 'user' : (spot.fee === 'no' ? 'free' : 'unknown');
+    var tagText = kind === 'user' ? 'Käyttäjän lisäämä'
+                : kind === 'free' ? 'Ilmainen (OSM)'
+                : 'Hinta tuntematon (OSM)';
+    wrap.appendChild(el('span', 'tag ' + kind, tagText));
+    wrap.appendChild(el('h3', null, spot.name || 'Pysäköintialue'));
+    if (spot.maxstay) wrap.appendChild(el('p', 'meta', 'Enimmäisaika: ' + spot.maxstay));
+    if (spot.note) wrap.appendChild(el('p', 'meta', spot.note));
+
+    var actions = el('div', 'actions');
+    var route = el('a', 'route', 'Avaa reitti');
+    route.href = 'https://www.google.com/maps/dir/?api=1&destination=' + spot.lat + ',' + spot.lng;
+    route.target = '_blank';
+    route.rel = 'noopener';
+    actions.appendChild(route);
+
+    if (spot.source === 'user') {
+      var del = el('button', 'btn-danger', 'Poista');
+      del.type = 'button';
+      del.addEventListener('click', function () {
+        if (!confirm('Poistetaanko tämä paikka?')) return;
+        userSpots = userSpots.filter(function (s) { return s.id !== spot.id; });
+        saveUserSpots();
+        render();
+        map.closePopup();
+      });
+      actions.appendChild(del);
+    }
+    wrap.appendChild(actions);
+    return wrap;
+  }
+
+  // ---------- Rendering ----------
+  function render() {
+    layers.free.clearLayers();
+    layers.unknown.clearLayers();
+    layers.user.clearLayers();
+
+    osmSpots.forEach(function (s) {
+      var kind = s.fee === 'no' ? 'free' : 'unknown';
+      L.marker([s.lat, s.lng], { icon: makeIcon(kind), title: s.name || 'Pysäköintialue' })
+        .bindPopup(function () { return popupFor(s); })
+        .addTo(layers[kind]);
+    });
+    userSpots.forEach(function (s) {
+      L.marker([s.lat, s.lng], { icon: makeIcon('user'), title: s.name })
+        .bindPopup(function () { return popupFor(s); })
+        .addTo(layers.user);
+    });
+    applyFilters();
+  }
+
+  function applyFilters() {
+    [['free', 'f-free'], ['unknown', 'f-unknown'], ['user', 'f-user']].forEach(function (pair) {
+      var on = document.getElementById(pair[1]).checked;
+      var layer = layers[pair[0]];
+      if (on && !map.hasLayer(layer)) map.addLayer(layer);
+      if (!on && map.hasLayer(layer)) map.removeLayer(layer);
+    });
+  }
+  ['f-free', 'f-unknown', 'f-user'].forEach(function (id) {
+    document.getElementById(id).addEventListener('change', applyFilters);
+  });
+
+  // ---------- OpenStreetMap data (Overpass) ----------
+  function parseOverpass(json) {
+    var out = [];
+    (json.elements || []).forEach(function (e) {
+      var tags = e.tags || {};
+      var lat = e.lat !== undefined ? e.lat : (e.center && e.center.lat);
+      var lng = e.lon !== undefined ? e.lon : (e.center && e.center.lon);
+      if (lat === undefined || lng === undefined) return;
+      if (tags.access && BLOCKED_ACCESS.indexOf(tags.access) !== -1) return;
+      out.push({
+        id: 'osm-' + e.type + '-' + e.id,
+        source: 'osm',
+        lat: lat,
+        lng: lng,
+        name: tags.name || '',
+        fee: tags.fee === 'no' ? 'no' : 'unknown',
+        maxstay: tags.maxstay || '',
+        note: ''
+      });
+    });
+    return out;
+  }
+
+  function searchArea() {
+    if (map.getZoom() < MIN_SEARCH_ZOOM) {
+      setStatus('Lähennä karttaa, jotta haku kohdistuu pienemmälle alueelle.');
+      return;
+    }
+    var b = map.getBounds();
+    var bbox = [b.getSouth(), b.getWest(), b.getNorth(), b.getEast()].join(',');
+    var query = '[out:json][timeout:25];(' +
+      'nwr["amenity"="parking"]["fee"="no"](' + bbox + ');' +
+      'nwr["amenity"="parking"][!"fee"](' + bbox + ');' +
+      ');out center tags;';
+
+    setStatus('Haetaan paikkoja OpenStreetMapista…', true);
+    var btn = document.getElementById('btn-search');
+    btn.disabled = true;
+
+    fetchOverpass(query, 0)
+    .then(function (json) {
+      osmSpots = parseOverpass(json);
+      saveOsmCache(osmSpots);
+      render();
+      var free = osmSpots.filter(function (s) { return s.fee === 'no'; }).length;
+      setStatus('Löytyi ' + free + ' ilmaista ja ' + (osmSpots.length - free) + ' hinnaltaan tuntematonta paikkaa.');
+    })
+    .catch(function (err) {
+      var code = err && err.status;
+      var msg = code === 429 ? 'Hakuja tehtiin liian monta lyhyessä ajassa. Odota minuutti ja paina Hae tältä alueelta.'
+              : code === 504 ? 'Hakupalvelin on ruuhkautunut. Yritä hetken päästä uudelleen.'
+              : code ? 'Haku epäonnistui (virhe ' + code + '). Yritä hetken päästä uudelleen.'
+              : 'Hakupalvelimeen ei saatu yhteyttä. Tarkista nettiyhteys ja yritä uudelleen.';
+      setStatus(msg, true);
+      if (window.console) console.error('Overpass-haku epäonnistui:', err);
+    })
+    .then(function () { btn.disabled = false; });
+  }
+
+  // Tries each Overpass server in turn until one answers.
+  function fetchOverpass(query, i) {
+    return fetch(OVERPASS_URLS[i], {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: 'data=' + encodeURIComponent(query)
+    })
+    .then(function (r) {
+      if (!r.ok) { var e = new Error('HTTP ' + r.status); e.status = r.status; throw e; }
+      return r.json();
+    })
+    .catch(function (err) {
+      if (i < OVERPASS_URLS.length - 1) return fetchOverpass(query, i + 1);
+      throw err;
+    });
+  }
+
+  function saveOsmCache(spots) {
+    try { localStorage.setItem(OSM_CACHE_KEY, JSON.stringify({ time: Date.now(), spots: spots })); }
+    catch (e) { /* cache is optional */ }
+  }
+  function loadOsmCache() {
+    try {
+      var c = JSON.parse(localStorage.getItem(OSM_CACHE_KEY) || 'null');
+      if (c && Array.isArray(c.spots) && Date.now() - c.time < OSM_CACHE_MAX_AGE) return c.spots;
+    } catch (e) { /* ignore */ }
+    return null;
+  }
+  document.getElementById('btn-search').addEventListener('click', searchArea);
+
+  // ---------- Add a spot ----------
+  var mapEl = document.getElementById('map');
+  var addBtn = document.getElementById('btn-add');
+  var dlg = document.getElementById('dlg');
+  var form = document.getElementById('form');
+  var pendingLatLng = null;
+
+  function setAddMode(on) {
+    addMode = on;
+    mapEl.classList.toggle('adding', on);
+    addBtn.textContent = on ? 'Peruuta lisäys' : 'Lisää paikka';
+    addBtn.className = on ? 'btn-secondary' : 'btn-primary';
+    if (on) setStatus('Napauta kartalta kohtaa, johon paikka lisätään.', true);
+    else setStatus('');
+  }
+  addBtn.addEventListener('click', function () { setAddMode(!addMode); });
+
+  map.on('click', function (ev) {
+    if (!addMode) return;
+    pendingLatLng = ev.latlng;
+    setAddMode(false);
+    form.reset();
+    dlg.showModal();
+    document.getElementById('in-name').focus();
+  });
+
+  document.getElementById('btn-cancel').addEventListener('click', function () {
+    pendingLatLng = null;
+    dlg.close();
+  });
+
+  form.addEventListener('submit', function (ev) {
+    ev.preventDefault();
+    if (!pendingLatLng) return;
+    userSpots.push({
+      id: 'user-' + Date.now() + '-' + Math.floor(Math.random() * 1000),
+      source: 'user',
+      lat: pendingLatLng.lat,
+      lng: pendingLatLng.lng,
+      name: document.getElementById('in-name').value.trim(),
+      maxstay: document.getElementById('in-maxstay').value.trim(),
+      note: document.getElementById('in-note').value.trim(),
+      fee: 'no',
+      addedAt: new Date().toISOString()
+    });
+    saveUserSpots();
+    pendingLatLng = null;
+    dlg.close();
+    render();
+    setStatus('Paikka tallennettu.');
+  });
+
+  // ---------- Start ----------
+  var cached = loadOsmCache();
+  if (cached) {
+    osmSpots = cached;
+    render();
+    setStatus('Näytetään tallennetut paikat. Päivitä painamalla Hae tältä alueelta.');
+  } else {
+    render();
+    searchArea();
+  }
+})();
+</script>
+</body>
+</html>
