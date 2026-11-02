@@ -11,6 +11,7 @@ Harjoitusprojekti: omistaja opettelee rakentamaan ja julkaisemaan sovelluksen ja
 - `index.html` on koko sovellus: HTML, CSS ja JavaScript samassa tiedostossa. Ei build-vaihetta eikä npm:ää.
 - `supabase/schema.sql` on tietokannan rakenne ja käyttöoikeudet. Ajetaan käsin Supabasen SQL Editorissa.
 - `data/osm-otaniemi.json` on Otaniemen OSM-pysäköintialueiden tilannekuva (Overpassin raakavastaus). Päivitetään komennolla `sh scripts/update-osm-snapshot.sh`.
+- `.github/workflows/update-osm-snapshot.yml` ajaa saman skriptin GitHubissa maanantaisin. Jos paikat muuttuivat, se commitoi tiedoston ja käynnistää Pages-julkaisun. Voi ajaa myös käsin: Actions → Päivitä OSM-tilannekuva → Run workflow. Muista siksi `git pull` ennen omia muutoksia.
 - Kirjastot ladataan CDN:stä tarkalla versionumerolla: Leaflet 1.9.4 (cdnjs), supabase-js 2.118.0 (jsDelivr).
 
 ## Ajaminen

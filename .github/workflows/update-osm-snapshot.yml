@@ -1,0 +1,51 @@
+# Päivittää Otaniemen OSM-tilannekuvan (data/osm-otaniemi.json) kerran viikossa.
+# Jos pysäköintipaikat ovat muuttuneet, tiedosto commitoidaan ja GitHub Pages
+# julkaisee sivun uudelleen. Käsin: Actions → Päivitä OSM-tilannekuva → Run workflow.
+name: Päivitä OSM-tilannekuva
+
+on:
+  schedule:
+    - cron: '0 4 * * 1' # maanantaisin klo 4 UTC (6 tai 7 Suomen aikaa)
+  workflow_dispatch:
+    inputs:
+      force:
+        description: 'Tallenna, vaikka paikat eivät muuttuneet'
+        type: boolean
+        default: false
+
+permissions:
+  contents: write # commit ja push
+  pages: write    # julkaisun käynnistys
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Hae tilannekuva Overpassista
+        # Overpass on välillä ruuhkainen, joten yritetään kolmesti 5 minuutin välein.
+        run: |
+          for i in 1 2 3; do
+            sh scripts/update-osm-snapshot.sh && exit 0
+            [ "$i" -lt 3 ] && sleep 300
+          done
+          exit 1
+
+      - name: Tallenna, jos paikat muuttuivat
+        env:
+          FORCE: ${{ inputs.force }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          # Tiedoston aikaleima muuttuu joka haulla, joten verrataan vain paikkoja.
+          if [ "$FORCE" != "true" ] && [ "$(git show HEAD:data/osm-otaniemi.json | jq -S .elements)" = "$(jq -S .elements data/osm-otaniemi.json)" ]; then
+            echo "Paikat eivät muuttuneet, ei committia."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/osm-otaniemi.json
+          git commit -m "Päivitä OSM-tilannekuva"
+          git push
+          # Varmistetaan julkaisu: botin push ei välttämättä käynnistä sitä itse.
+          gh api -X POST "repos/${{ github.repository }}/pages/builds"
