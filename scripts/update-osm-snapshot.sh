@@ -22,7 +22,7 @@ TMP="$OUT.tmp"
 mkdir -p data
 for URL in https://overpass-api.de/api/interpreter https://overpass.private.coffee/api/interpreter; do
   echo "Haetaan: $URL"
-  if curl -sf -m 90 -A 'Spotti/1.0 (https://henrikhiilamo.github.io/ilmaispaikka/)' \
+  if curl -sf -m 90 -A 'Spotti/1.0 (https://henrikhiilamo.github.io/spotti/)' \
        --data-urlencode "data=$QUERY" "$URL" -o "$TMP" \
      && grep -q '"elements"' "$TMP"; then
     mv "$TMP" "$OUT"

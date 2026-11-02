@@ -29,7 +29,7 @@ Clauden esikatselu (`.claude/launch.json`) käyttää porttia 8001, ettei se tö
 
 ## Julkaisu
 
-- GitHub Pages: https://henrikhiilamo.github.io/ilmaispaikka/ (repo `henrikhiilamo/ilmaispaikka`, haara `main`, juurikansio). Repon ja osoitteen nimi on vielä vanha. Jos repo nimetään uudelleen, myös Pages-osoite muuttuu, eikä vanha osoite ohjaa uuteen.
+- GitHub Pages: https://henrikhiilamo.github.io/spotti/ (repo `henrikhiilamo/spotti`, haara `main`, juurikansio). Repo nimettiin uudelleen 2026-11-02 (ennen `ilmaispaikka`). Vanha Pages-osoite …github.io/ilmaispaikka/ ei enää toimi eikä ohjaa uuteen.
 - localStorage-avaimet (`ilmaispaikka_*`) pidettiin vanhalla nimellä, jotta käyttäjien tallennetut tiedot säilyvät nimenvaihdon yli.
 - Päivitys: `git push`, minkä jälkeen sivu päivittyy noin minuutissa.
 - Pages julkaisee kaikki repon tiedostot, myös CLAUDE.md:n ja schema.sql:n. Repoon ei saa koskaan laittaa salaisuuksia.
