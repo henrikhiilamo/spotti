@@ -58,6 +58,9 @@
     border: 1px solid rgba(255,255,255,0.28);
     border-radius: 999px; padding: 5px 11px 5px 9px;
     font-size: 14px; cursor: pointer; user-select: none;
+    /* Whole pixels keep the header, and so the map's top edge, on a whole
+       pixel. Otherwise map tiles land between pixels and show hairline seams. */
+    line-height: 20px;
   }
   .filters input { position: absolute; opacity: 0; pointer-events: none; }
   .filters .dot { width: 12px; height: 12px; border-radius: 50%; border: 2px solid #fff; background: transparent; }
@@ -74,6 +77,11 @@
   .map-wrap { flex: 1; min-height: 0; position: relative; }
   #map { position: absolute; inset: 0; z-index: 1; }
   #map.adding { cursor: crosshair; }
+  .basemap-toggle {
+    background: #fff; color: var(--ink);
+    border: 2px solid rgba(0,0,0,0.2); border-radius: 8px;
+    padding: 6px 12px; min-height: 36px; font-size: 14px;
+  }
 
   .pin {
     width: 28px; height: 28px; border-radius: 50%;
@@ -163,7 +171,11 @@
   .dialog-actions { display: flex; justify-content: flex-end; gap: 8px; }
 
   @media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; transition: none !important; } }
-  @media (max-width: 480px) { .tagline { display: none; } }
+  @media (max-width: 480px) {
+    .tagline { display: none; }
+    /* The satellite attribution wraps to two lines here; keep it uncovered. */
+    .controls { bottom: 40px; }
+  }
 </style>
 </head>
 <body>
@@ -342,7 +354,8 @@
     if (tiles) map.removeLayer(tiles);
     var p = TILE_PROVIDERS[i];
     var errors = 0, loaded = false;
-    var layer = L.tileLayer(p.url, p.opts).addTo(map);
+    var layer = L.tileLayer(p.url, p.opts);
+    if (!satelliteOn) layer.addTo(map);
     tiles = layer;
     layer.on('tileload', function () { loaded = true; });
     layer.on('tileerror', function () {
@@ -358,6 +371,45 @@
     });
   }
   useProvider(0);
+
+  // Satellite view: HSY's sharp 2023 orthophoto (open data, CC BY 4.0) for the
+  // Helsinki region, on top of Esri's world imagery for everywhere else.
+  var BASEMAP_KEY = 'ilmaispaikka_basemap';
+  var satellite = L.layerGroup([
+    L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+      maxZoom: 19, attribution: 'Ilmakuva &copy; Esri, Maxar, Earthstar Geographics'
+    }),
+    L.tileLayer.wms('https://kartta.hsy.fi/geoserver/wms', {
+      layers: 'taustakartat_ja_aluejaot:Ortoilmakuva_2023', format: 'image/jpeg', maxZoom: 19,
+      bounds: [[59.92, 24.48], [60.42, 25.27]], // HSY's area; Esri shows outside it
+      attribution: 'Ortoilmakuva &copy; HSY 2023'
+    })
+  ]);
+  var satelliteOn = false;
+  var basemapBtn = null;
+  function setSatellite(on) {
+    satelliteOn = on;
+    if (on) { map.removeLayer(tiles); satellite.addTo(map); }
+    else { map.removeLayer(satellite); tiles.addTo(map); }
+    basemapBtn.textContent = on ? 'Kartta' : 'Satelliitti';
+    basemapBtn.setAttribute('aria-pressed', String(on));
+    try { localStorage.setItem(BASEMAP_KEY, on ? 'satellite' : 'map'); } catch (e) { /* optional */ }
+  }
+  var BasemapControl = L.Control.extend({
+    options: { position: 'topright' },
+    onAdd: function () {
+      basemapBtn = L.DomUtil.create('button', 'basemap-toggle');
+      basemapBtn.type = 'button';
+      basemapBtn.title = 'Vaihda karttapohjan ja satelliittikuvan välillä';
+      L.DomEvent.disableClickPropagation(basemapBtn);
+      basemapBtn.addEventListener('click', function () { setSatellite(!satelliteOn); });
+      return basemapBtn;
+    }
+  });
+  new BasemapControl().addTo(map);
+  var savedBasemap = null;
+  try { savedBasemap = localStorage.getItem(BASEMAP_KEY); } catch (e) { /* optional */ }
+  setSatellite(savedBasemap === 'satellite');
 
   // ---------- Helpers ----------
   var statusEl = document.getElementById('status');

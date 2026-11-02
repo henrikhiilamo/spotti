@@ -35,6 +35,8 @@ Clauden esikatselu (`.claude/launch.json`) käyttää porttia 8001, ettei se tö
 ## Tietolähteet
 
 - Karttapohja: OpenStreetMapin tiilet. Jos ne eivät lataudu, vaihdetaan automaattisesti Esri World Street Mapiin.
+- Satelliittikuva (nappi oikeassa yläkulmassa, valinta muistetaan selaimen localStorageen): HSY:n ortoilmakuva 2023 (WMS `kartta.hsy.fi/geoserver/wms`, taso `taustakartat_ja_aluejaot:Ortoilmakuva_2023`, avoin data CC BY 4.0) pääkaupunkiseudulla ja Esri World Imagery sen alla muualla. HSY valittiin, koska se on Otaniemessä paljon terävämpi ja tuoreempi kuin Esrin kuva, jossa rakennukset ovat myös vinossa ja hieman siirtyneinä. Kumpikaan palvelu ei vaadi API-avainta. Lähdetiedot näkyvät kartan oikeassa alakulmassa, ja ne on näytettävä käyttöehtojen mukaan.
+- Yläpalkin korkeuden pitää olla kokonaislukupikseleissä (siksi suodatinnapeilla on `line-height: 20px`). Muuten karttatiilet osuvat pikselien väliin, ja tarkoilla näytöillä tiilien saumoihin tulee ohuita vaaleita viivoja, jotka näkyvät etenkin satelliittikuvassa.
 - OSM-pysäköintialueet haetaan Overpass API:lla (kaksi palvelinta, toinen varalla; kumpaakin odotetaan enintään 20 s, koska ilmaiset palvelimet välillä jumittuvat vastaamatta):
   - `amenity=parking` + `fee=no` → ilmainen
   - `amenity=parking` ilman `fee`-tagia → hinta tuntematon
