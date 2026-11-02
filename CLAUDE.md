@@ -10,6 +10,7 @@ Harjoitusprojekti: omistaja opettelee rakentamaan ja julkaisemaan sovelluksen ja
 
 - `index.html` on koko sovellus: HTML, CSS ja JavaScript samassa tiedostossa. Ei build-vaihetta eikä npm:ää.
 - `supabase/schema.sql` on tietokannan rakenne ja käyttöoikeudet. Ajetaan käsin Supabasen SQL Editorissa.
+- `data/aalto-pysakointi.json` on Aallon kampuksen pysäköintikartasta (v8) luettu aineisto: lupa-alueet, Aallon maksulliset pihat ja Espoon maksulliset kadut (katso Tietolähteet).
 - `data/osm-otaniemi.json` on Otaniemen OSM-pysäköintialueiden tilannekuva (Overpassin raakavastaus). Päivitetään komennolla `sh scripts/update-osm-snapshot.sh`.
 - `.github/workflows/update-osm-snapshot.yml` ajaa saman skriptin GitHubissa maanantaisin. Jos paikat muuttuivat, se commitoi tiedoston, ja push käynnistää Pages-julkaisun. Voi ajaa myös käsin: Actions → Päivitä OSM-tilannekuva → Run workflow. Muista siksi `git pull` ennen omia muutoksia.
 - Kirjastot ladataan CDN:stä tarkalla versionumerolla: Leaflet 1.9.4 (cdnjs), supabase-js 2.118.0 (jsDelivr).
@@ -46,6 +47,11 @@ Clauden esikatselu (`.claude/launch.json`) käyttää porttia 8001, ettei se tö
   - käynnistyksessä näytetään välimuisti tai, jos sitä ei ole, repon tilannekuva `data/osm-otaniemi.json`. Live-haku tehdään vain Hae-napista, tai jos tilannekuvaa ei saada ladattua.
   - sama Overpass-kysely on kahdessa paikassa (`searchArea()` ja `scripts/update-osm-snapshot.sh`), joten pidä ne samoina
 - Käyttäjien lisäämät paikat: Supabase-taulu `spots`, kaikki näkevät samat paikat.
+- Maksulliset ja Aalto-lupaa vaativat paikat (suodattimet Maksulliset ja Aalto-lupa, oletuksena pois päältä):
+  - `data/aalto-pysakointi.json` luettiin Aallon kartasta 2026-11-02 seuraavasti. Kartta renderöitiin kuvaksi, ja merkit tunnistettiin tummanharmaina, noin 38 px:n neliöinä. Kukin merkki luokiteltiin vertaamalla sitä kartalta valittuihin malleihin (€, A!, latauspiste, ilman lupaa). Vierekkäiset merkit yhdistettiin yhdeksi alueeksi. Punaisen kadunvarsiviivan vieressä oleva €-merkki tarkoittaa Espoon katupysäköintiä (tyyppi `katu` ja vyöhyke). Pikselit muunnettiin koordinaateiksi Marsion, A Blocin ja Urban Millin avulla, tarkkuus noin 15 m. Kun Aalto julkaisee uuden kartan, aineisto pitää tehdä uudelleen.
+  - Hinnat ja maksutavat ovat index.html:n vakioissa `AALTO_PRICE`, `AALTO_PAYMENT`, `ESPOO_ZONES` ja `ESPOO_PAYMENT`, tarkistettu 2026-11-02. Aalto: 1 €/h ma–pe 8–18 + palvelumaksu, EasyPark tai ParkMan, vyöhyketunnus 543 (aalto.fi, päivitetty 12.10.2026). Espoo: vyöhyke 1 3,50 €/h, vyöhyke 2 2,50 €/h (tiedote 11.8.2026; espoo.fi:n pysäköintisivulla oli vielä vanhat hinnat 2 € ja 1 €). Maksutavat: EasyPark, ParkMan, Moovy, Aimo tai tekstiviesti.
+  - OSM:n `fee=yes`-alueet näytetään maksullisina. Hinta tulee `charge`-tagista ja maksutavat `payment:*`-tageista, mutta lähes kaikilta ne puuttuvat.
+  - OSM-alue, jota ei ole merkitty ilmaiseksi ja joka on alle 50 m päässä Aallon kartan paikasta, piilotetaan päällekkäisenä (`nearAalto`).
 
 ## Supabase
 
@@ -83,6 +89,8 @@ Miten oikeudet toimivat:
 
 ## Tunnetut rajoitukset
 
+- Espoon maksulliset kadut näkyvät maksullisina vain Aallon kartan alueella. Tapiolan maksulliset kadut ja Vaisalantie on vain piilotettu ilmaisista.
+- Hinnat muuttuvat. Tarkista ne lähteistä, kun Espoo tai Aalto tiedottaa muutoksista, ja päivitä vakiot.
 - OSM:n kadunvarsitiedot ovat Otaniemessä ja Tapiolassa osin vanhentuneita Espoon lokakuun 2026 maksumuutosten takia. `PAID_STREETS` paikkaa tämän, mutta pysyvä korjaus on päivittää tagit OSM:ään. Kun se on tehty, listan voi purkaa.
 - Kadunvarsimerkki on katuosuuden keskellä eikä kerro, kummalla puolella katua pysäköinti on sallittu ("vain toinen puoli"), koska OSM:n vasen/oikea riippuu siitä, mihin suuntaan katu on piirretty.
 
