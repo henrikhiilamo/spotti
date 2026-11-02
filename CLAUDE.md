@@ -81,6 +81,8 @@ Miten oikeudet toimivat:
 
 ## Tunnetut rajoitukset
 
+- Kadunvarsipysäköinti, joka on merkitty OSM:ssä suoraan katuun (`parking:left/right/both`, `parking:condition:*`), ei näy sovelluksessa, koska haku kattaa vain `amenity=parking`-alueet. Otaniemessä tällaisia katuosuuksia on noin 145, joista useimmissa on pysäköintikielto. Tiedot ovat lisäksi vanhentuneita: Espoo laajensi maksullisen kadunvarsipysäköinnin Otaniemeen lokakuussa 2026, ja sen jälkeen maksullisia ovat Jämeräntaival, Kivimiehentie, Konemiehentie (osittain), Miestentie, Otakaari (osittain), Servin Maijan tie, Tietotie, Vaisalantie ja Vuorimiehentie (Espoon tiedote 16.9.2026). OSM merkitsee monet näistä yhä ilmaisiksi tai kiekkopaikoiksi. Ennen kuin kadunvarsitiedot otetaan käyttöön, ne pitää päivittää OSM:ään.
+
 - Lisäyksiä ei ole rajoitettu: kuka tahansa voi skriptillä luoda paljon anonyymejä tunnuksia ja paikkoja. Jos roskaa alkaa tulla, lisää CAPTCHA anonyymiin kirjautumiseen.
 - Haku palauttaa enintään 1000 riviä (Supabasen oletus). Kun paikkoja on enemmän, hae vain kartalla näkyvältä alueelta.
 - Uudet paikat näkyvät muille vasta, kun he lataavat sivun uudelleen (ei Realtime-tilausta).
