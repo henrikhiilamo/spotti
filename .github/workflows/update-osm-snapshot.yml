@@ -1,6 +1,6 @@
 # Päivittää Otaniemen OSM-tilannekuvan (data/osm-otaniemi.json) kerran viikossa.
-# Jos pysäköintipaikat ovat muuttuneet, tiedosto commitoidaan ja GitHub Pages
-# julkaisee sivun uudelleen. Käsin: Actions → Päivitä OSM-tilannekuva → Run workflow.
+# Jos pysäköintipaikat ovat muuttuneet, tiedosto commitoidaan, ja push saa
+# GitHub Pagesin julkaisemaan sivun uudelleen. Käsin: Actions → Päivitä OSM-tilannekuva → Run workflow.
 name: Päivitä OSM-tilannekuva
 
 on:
@@ -14,8 +14,7 @@ on:
         default: false
 
 permissions:
-  contents: write # commit ja push
-  pages: write    # julkaisun käynnistys
+  contents: write # commit ja push; push käynnistää myös Pages-julkaisun
 
 jobs:
   update:
@@ -35,7 +34,6 @@ jobs:
       - name: Tallenna, jos paikat muuttuivat
         env:
           FORCE: ${{ inputs.force }}
-          GH_TOKEN: ${{ github.token }}
         run: |
           # Tiedoston aikaleima muuttuu joka haulla, joten verrataan vain paikkoja.
           if [ "$FORCE" != "true" ] && [ "$(git show HEAD:data/osm-otaniemi.json | jq -S .elements)" = "$(jq -S .elements data/osm-otaniemi.json)" ]; then
@@ -47,5 +45,3 @@ jobs:
           git add data/osm-otaniemi.json
           git commit -m "Päivitä OSM-tilannekuva"
           git push
-          # Varmistetaan julkaisu: botin push ei välttämättä käynnistä sitä itse.
-          gh api -X POST "repos/${{ github.repository }}/pages/builds"

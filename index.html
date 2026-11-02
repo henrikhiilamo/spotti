@@ -226,10 +226,31 @@
   var SUPABASE_URL = 'https://vkgjmozbqptezlopdtdd.supabase.co';
   var SUPABASE_KEY = 'sb_publishable_efHHmw_JM_7cYsJoE9Sijw_QaWi3MBm'; // Project Settings → API Keys
   var SPOT_COLUMNS = 'id, lat, lng, name, maxstay, note, created_by';
-  var OSM_CACHE_KEY = 'ilmaispaikka_osm_cache_v1';
+  var OSM_CACHE_KEY = 'ilmaispaikka_osm_cache_v2'; // bump when parseOverpass rules change
   var OSM_CACHE_MAX_AGE = 24 * 60 * 60 * 1000; // 1 day
   // Parking access values that mean "not for ordinary drivers"
   var BLOCKED_ACCESS = ['private', 'customers', 'permit', 'delivery', 'no', 'residents'];
+  // Areas OSM tags as free that actually need an Aalto University parking
+  // permit or a fee, checked against Aalto's campus parking map
+  // (Pysakointikartta_maksullinen_katupysakointi_v8) on 2026-11-02. Hidden like
+  // access=permit. Open e.g. openstreetmap.org/way/4223245 to see an area.
+  var NOT_FREE_OSM = {
+    'node/1610326511': 'Aalto-lupa',
+    'way/4218082': 'Aalto-lupa',
+    'way/4223245': 'Aalto-lupa tai maksu',
+    'way/26133415': 'Aalto-lupa tai maksu',
+    'way/26608582': 'maksullinen',
+    'way/27469251': 'maksullinen kadunvarsi',
+    'way/27480170': 'Aalto-lupa tai maksu',
+    'way/80401759': 'Aalto-lupa tai maksu',
+    'way/113801368': 'Aalto-lupa',
+    'way/156443389': 'Aalto-lupa',
+    'way/545341207': 'Aalto-lupa tai maksu',
+    'way/545341208': 'Aalto-lupa tai maksu',
+    'way/623817263': 'Aalto-lupa tai maksu',
+    'way/709672565': 'Aalto-lupa tai maksu',
+    'way/1557787296': 'maksullinen kadunvarsi'
+  };
 
   // ---------- State ----------
   var osmSpots = [];
@@ -403,6 +424,7 @@
       var lng = e.lon !== undefined ? e.lon : (e.center && e.center.lon);
       if (lat === undefined || lng === undefined) return;
       if (tags.access && BLOCKED_ACCESS.indexOf(tags.access) !== -1) return;
+      if (NOT_FREE_OSM[e.type + '/' + e.id]) return;
       out.push({
         id: 'osm-' + e.type + '-' + e.id,
         source: 'osm',

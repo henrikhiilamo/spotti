@@ -11,7 +11,7 @@ Harjoitusprojekti: omistaja opettelee rakentamaan ja julkaisemaan sovelluksen ja
 - `index.html` on koko sovellus: HTML, CSS ja JavaScript samassa tiedostossa. Ei build-vaihetta eikä npm:ää.
 - `supabase/schema.sql` on tietokannan rakenne ja käyttöoikeudet. Ajetaan käsin Supabasen SQL Editorissa.
 - `data/osm-otaniemi.json` on Otaniemen OSM-pysäköintialueiden tilannekuva (Overpassin raakavastaus). Päivitetään komennolla `sh scripts/update-osm-snapshot.sh`.
-- `.github/workflows/update-osm-snapshot.yml` ajaa saman skriptin GitHubissa maanantaisin. Jos paikat muuttuivat, se commitoi tiedoston ja käynnistää Pages-julkaisun. Voi ajaa myös käsin: Actions → Päivitä OSM-tilannekuva → Run workflow. Muista siksi `git pull` ennen omia muutoksia.
+- `.github/workflows/update-osm-snapshot.yml` ajaa saman skriptin GitHubissa maanantaisin. Jos paikat muuttuivat, se commitoi tiedoston, ja push käynnistää Pages-julkaisun. Voi ajaa myös käsin: Actions → Päivitä OSM-tilannekuva → Run workflow. Muista siksi `git pull` ennen omia muutoksia.
 - Kirjastot ladataan CDN:stä tarkalla versionumerolla: Leaflet 1.9.4 (cdnjs), supabase-js 2.118.0 (jsDelivr).
 
 ## Ajaminen
@@ -38,6 +38,7 @@ Clauden esikatselu (`.claude/launch.json`) käyttää porttia 8001, ettei se tö
   - `amenity=parking` + `fee=no` → ilmainen
   - `amenity=parking` ilman `fee`-tagia → hinta tuntematon
   - pois suodatetaan `access` = private, customers, permit, delivery, no, residents
+  - `NOT_FREE_OSM` (index.html) piilottaa alueet, jotka OSM merkitsee ilmaisiksi, vaikka ne vaativat Aalto-yliopiston pysäköintiluvan tai ovat maksullisia. Lista on tarkistettu Aallon kampuksen pysäköintikarttaa (v8) vasten 2026-11-02. Jos OSM-alue piirretään uudelleen, sen tunniste vaihtuu ja se pitää lisätä listaan uudelleen. Parempi pitkän aikavälin korjaus on korjata tagit (`access=permit`) suoraan OSM:ään paikan päällä nähtyjen kylttien perusteella. Aallon karttaa ei voi käyttää OSM:n lähteenä, koska OSM hyväksyy vain lähteet, joiden lisenssi sen sallii, eikä Aallon kartalle ole ilmoitettu lisenssiä.
   - `fee:conditional` näytetään ponnahdusikkunassa, esimerkiksi Otaparkki: `fee=no`, mutta "Maksullinen ma-pe 08:00-18:00". Muuten osittain maksullinen paikka näyttäisi aina ilmaiselta.
   - haku vain zoomilla ≥ 14, tulos välimuistiin localStorageen 24 tunniksi
   - käynnistyksessä näytetään välimuisti tai, jos sitä ei ole, repon tilannekuva `data/osm-otaniemi.json`. Live-haku tehdään vain Hae-napista, tai jos tilannekuvaa ei saada ladattua.
