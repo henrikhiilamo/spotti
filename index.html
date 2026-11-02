@@ -219,6 +219,7 @@
     'https://overpass-api.de/api/interpreter',
     'https://overpass.private.coffee/api/interpreter'
   ];
+  var OVERPASS_TIMEOUT = 20 * 1000; // per server, so a hung server can't block the search forever
   // Users' spots are shared through Supabase. The publishable key is public
   // on purpose: the RLS rules in supabase/schema.sql decide what anyone may do.
   var SUPABASE_URL = 'https://vkgjmozbqptezlopdtdd.supabase.co';
@@ -444,6 +445,7 @@
       var msg = code === 429 ? 'Hakuja tehtiin liian monta lyhyessä ajassa. Odota minuutti ja paina Hae tältä alueelta.'
               : code === 504 ? 'Hakupalvelin on ruuhkautunut. Yritä hetken päästä uudelleen.'
               : code ? 'Haku epäonnistui (virhe ' + code + '). Yritä hetken päästä uudelleen.'
+              : err && err.name === 'AbortError' ? 'Hakupalvelimet eivät vastanneet ajoissa. Yritä hetken päästä uudelleen.'
               : 'Hakupalvelimeen ei saatu yhteyttä. Tarkista nettiyhteys ja yritä uudelleen.';
       setStatus(msg, true);
       if (window.console) console.error('Overpass-haku epäonnistui:', err);
@@ -451,17 +453,23 @@
     .then(function () { btn.disabled = false; });
   }
 
-  // Tries each Overpass server in turn until one answers.
+  // Tries each Overpass server in turn until one answers. A server that has
+  // not answered within OVERPASS_TIMEOUT is aborted and counts as failed.
   function fetchOverpass(query, i) {
+    var controller = new AbortController();
+    var timer = setTimeout(function () { controller.abort(); }, OVERPASS_TIMEOUT);
     return fetch(OVERPASS_URLS[i], {
       method: 'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: 'data=' + encodeURIComponent(query)
+      body: 'data=' + encodeURIComponent(query),
+      signal: controller.signal
     })
     .then(function (r) {
       if (!r.ok) { var e = new Error('HTTP ' + r.status); e.status = r.status; throw e; }
       return r.json();
     })
+    .then(function (json) { clearTimeout(timer); return json; },
+          function (err) { clearTimeout(timer); throw err; })
     .catch(function (err) {
       if (i < OVERPASS_URLS.length - 1) return fetchOverpass(query, i + 1);
       throw err;

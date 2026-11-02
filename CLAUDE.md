@@ -32,7 +32,7 @@ Clauden esikatselu (`.claude/launch.json`) käyttää porttia 8001, ettei se tö
 ## Tietolähteet
 
 - Karttapohja: OpenStreetMapin tiilet. Jos ne eivät lataudu, vaihdetaan automaattisesti Esri World Street Mapiin.
-- OSM-pysäköintialueet haetaan Overpass API:lla (kaksi palvelinta, toinen varalla):
+- OSM-pysäköintialueet haetaan Overpass API:lla (kaksi palvelinta, toinen varalla; kumpaakin odotetaan enintään 20 s, koska ilmaiset palvelimet välillä jumittuvat vastaamatta):
   - `amenity=parking` + `fee=no` → ilmainen
   - `amenity=parking` ilman `fee`-tagia → hinta tuntematon
   - pois suodatetaan `access` = private, customers, permit, delivery, no, residents
