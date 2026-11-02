@@ -22,6 +22,13 @@ Avaa http://localhost:8000. Sivua ei voi avata suoraan tiedostona (`file://`), k
 
 Clauden esikatselu (`.claude/launch.json`) käyttää porttia 8001, ettei se törmää omistajan omaan palvelimeen portissa 8000.
 
+## Julkaisu
+
+- GitHub Pages: https://henrikhiilamo.github.io/ilmaispaikka/ (repo `henrikhiilamo/ilmaispaikka`, haara `main`, juurikansio).
+- Päivitys: `git push`, minkä jälkeen sivu päivittyy noin minuutissa.
+- Pages julkaisee kaikki repon tiedostot, myös CLAUDE.md:n ja schema.sql:n. Repoon ei saa koskaan laittaa salaisuuksia.
+- `.nojekyll` kertoo GitHubille, että sivu julkaistaan sellaisenaan ilman Jekyll-käännöstä.
+
 ## Tietolähteet
 
 - Karttapohja: OpenStreetMapin tiilet. Jos ne eivät lataudu, vaihdetaan automaattisesti Esri World Street Mapiin.
@@ -54,7 +61,8 @@ Miten oikeudet toimivat:
 
 ## Päätökset
 
-- 2026-11-02: Projekti Git-repoksi, päähaara `main`. Commit-nimi ja -sähköposti on asetettu vain tähän repoon (`git config`, ei `--global`).
+- 2026-11-02: Projekti Git-repoksi, päähaara `main`. Commit-nimi ja -sähköposti on asetettu vain tähän repoon (`git config`, ei `--global`). Sähköpostina on GitHubin noreply-osoite, jotta omistajan Gmail ei näy julkisessa repossa.
+- 2026-11-02: Julkaisu GitHub Pagesiin, koska se on ilmainen ja päivittyy suoraan `git push` -komennolla ilman erillistä palvelua. Push tehdään SSH-avaimella (`~/.ssh/id_ed25519`, salasana macOS:n avainnipussa).
 - 2026-11-02: Käyttäjien paikat localStoragesta Supabaseen, jotta kaikki näkevät samat paikat. supabase-js ladataan CDN:stä (ei npm:ää), koska anonyymi kirjautuminen on sillä helppo tehdä. Poisto-oikeus vain lisääjällä anonyymin tunnuksen avulla; vaihtoehto "kuka tahansa voi poistaa" hylättiin, koska yksi ilkivaltainen käyttäjä voisi tyhjentää kartan.
 - 2026-11-02: Vanhoja localStorageen tallennettuja paikkoja ei siirretä Supabaseen automaattisesti; sovellus ei enää lue niitä.
 
